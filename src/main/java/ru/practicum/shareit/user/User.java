@@ -1,17 +1,14 @@
 package ru.practicum.shareit.user;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.Setter;
 
 import javax.validation.constraints.*;
 
 
-/**
- * TODO Sprint add-controllers.
- */
-@Data
-@SuperBuilder
+@Getter
+@Setter
 @NoArgsConstructor
 public class User {
 

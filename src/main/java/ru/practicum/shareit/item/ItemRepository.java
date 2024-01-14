@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.EntityNotFoundException;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.*;
@@ -10,11 +12,10 @@ import java.util.*;
 public class ItemRepository {
 
     private final Map<Integer, Item> storageItem = new HashMap<>();
-    private int generationId = 0;
+    private int generationId = 1;
 
     public Item create(Item item) {
-        ++generationId;
-        item.setId(generationId);
+        item.setId(generationId++);
         storageItem.put(item.getId(), item);
         return item;
     }
@@ -32,17 +33,6 @@ public class ItemRepository {
         return item;
     }
 
-    public Collection<Item> getAll() {
-        ArrayList<Item> list = new ArrayList<>();
-        if (storageItem.isEmpty()) {
-            return list;
-        }
-        for (Item item : storageItem.values()) {
-            list.add(item);
-        }
-        return list;
-    }
-
 
     public Item getId(int id) {
         if (storageItem.containsKey(id)) {
@@ -51,11 +41,11 @@ public class ItemRepository {
         throw new EntityNotFoundException("Нет вещи с таким id");
     }
 
-    public Collection<Item> getItemsForUser(int id) {
-        List<Item> list = new ArrayList<>();
+    public Collection<ItemDto> getItemsForUser(int id) {
+        List<ItemDto> list = new ArrayList<>();
         for (Item item : storageItem.values()) {
             if (item.getOwner().getId() == id) {
-                list.add(item);
+                list.add(ItemMapper.toItemDto(item));
             }
         }
         return list;
@@ -70,13 +60,13 @@ public class ItemRepository {
         throw new EntityNotFoundException(String.format("Удаление невозможно %s не сущесвует", item));
     }
 
-    public List<Item> getItemsBySearch(String textQuery) {
-        List<Item> items = new ArrayList<>();
+    public List<ItemDto> getItemsBySearch(String textQuery) {
+        List<ItemDto> items = new ArrayList<>();
         for (Item item : storageItem.values()) {
             if ((item.getName().toLowerCase().contains(textQuery)
                     || item.getDescription().toLowerCase().contains(textQuery))
                     && item.getAvailable()) {
-                items.add(item);
+                items.add(ItemMapper.toItemDto(item));
             }
         }
         return items;

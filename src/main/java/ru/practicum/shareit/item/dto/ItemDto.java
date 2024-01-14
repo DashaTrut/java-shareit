@@ -1,18 +1,14 @@
 package ru.practicum.shareit.item.dto;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-import ru.practicum.shareit.request.ItemRequest;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
-@SuperBuilder
+@Builder
 @NoArgsConstructor
 public class ItemDto {
 
@@ -23,16 +19,14 @@ public class ItemDto {
     private String description;
     @NotNull
     private Boolean available;
-    private ItemRequest request;
+    private Integer request;
 
-
-    public ItemDto(String name, String description, boolean available) {
-        this.available = available;
+    public ItemDto(int id, String name, String description, Boolean available, Integer request) {
+        this.id = id;
         this.name = name;
         this.description = description;
-    }
-
-    public ItemDto(String name, String description, boolean available, Integer integer) {
+        this.available = available;
+        this.request = request;
     }
 }
 

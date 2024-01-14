@@ -1,6 +1,5 @@
 package ru.practicum.shareit.request;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 import ru.practicum.shareit.user.User;
@@ -13,7 +12,6 @@ import java.time.LocalDateTime;
  */
 @Data
 @SuperBuilder
-@AllArgsConstructor
 public class ItemRequest { //класс, отвечающий за запрос вещи
     @NotBlank
     private Integer id;

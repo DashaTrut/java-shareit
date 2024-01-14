@@ -2,7 +2,8 @@ package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.EntityNotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserMapper;
 
 
 import java.util.ArrayList;
@@ -13,11 +14,8 @@ import java.util.Map;
 @Component
 public class UserRepository {
     private final Map<Integer, User> storageUser = new HashMap<>();
-    private int generationId = 0;
 
     public User create(User user) {
-        validate(user);
-        user.setId(++generationId);
         storageUser.put(user.getId(), user);
         return user;
     }
@@ -35,18 +33,20 @@ public class UserRepository {
             user.setEmail(oldUser.getEmail());
         }
         user.setId(id);
-        validateUpdate(user, id);
-        storageUser.put(user.getId(), user);
         return user;
     }
 
-    public Collection<User> getAll() {
-        ArrayList<User> list = new ArrayList<>();
+    public void putUpdate(User user) {
+        storageUser.put(user.getId(), user);
+    }
+
+    public Collection<UserDto> getAll() {
+        ArrayList<UserDto> list = new ArrayList<>();
         if (storageUser.isEmpty()) {
             return list;
         }
         for (User user : storageUser.values()) {
-            list.add(user);
+            list.add(UserMapper.toUserDto(user));
         }
         return list;
     }
@@ -66,22 +66,6 @@ public class UserRepository {
             return;
         }
         throw new EntityNotFoundException(String.format("Удаление невозможно %s не сущесвует", id));
-    }
-
-    public void validate(User user) {
-        for (User userMap : storageUser.values())
-            if (user.getEmail().equals(userMap.getEmail())) {
-                throw new ValidationException("Этот Email занят");
-            }
-        ;
-    }
-
-    public void validateUpdate(User user, int id) {
-        for (User userMap : storageUser.values())
-            if ((user.getEmail().equals(userMap.getEmail()) && (userMap.getId() != id))) {
-                throw new ValidationException("Этот Email занят");
-            }
-        ;
     }
 }
 

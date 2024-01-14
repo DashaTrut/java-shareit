@@ -1,20 +1,18 @@
 package ru.practicum.shareit.item.model;
 
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-import ru.practicum.shareit.request.ItemRequest;
+import lombok.Setter;
 import ru.practicum.shareit.user.User;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-/**
- * TODO Sprint add-controllers.
- */
-@Data
-@SuperBuilder
 @NoArgsConstructor
+@Getter
+@Setter
+@Builder
 public class Item {
 
     private Integer id;
@@ -27,5 +25,14 @@ public class Item {
     @NotNull
     private Boolean available;
 
-    private ItemRequest request;
+    private Integer request;
+
+    public Item(Integer id, String name, User owner, String description, Boolean available, Integer request) {
+        this.id = id;
+        this.name = name;
+        this.owner = owner;
+        this.description = description;
+        this.available = available;
+        this.request = request;
+    }
 }
