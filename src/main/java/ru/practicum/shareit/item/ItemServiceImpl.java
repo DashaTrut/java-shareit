@@ -24,13 +24,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto add(ItemDto itemDto, Integer id) {
         if (id != null) {
             User user = userRepository.getUser(id);
-            Item item = itemRepository.create(Item.builder()
-                    .name(itemDto.getName())
-                    .description(itemDto.getDescription())
-                    .available(itemDto.getAvailable())
-                    .request(null)
-                    .build());
-            item.setOwner(user);
+            Item item = itemRepository.create(ItemMapper.toItem(itemDto, user));
             return ItemMapper.toItemDto(item);
         } else {
             throw new EntityNotFoundException("не передали id");
@@ -38,26 +32,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public ItemDto update(ItemDto itemDto, int id, int itemId) {
-        Item item = Item.builder()
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .id(itemId)
-                .available(itemDto.getAvailable())
-                .request(itemDto.getRequest())
-                .build();
-        item.setOwner(userRepository.getUser(id));
         Item oldItem = getForIdItem(itemId);
         if (oldItem.getOwner().getId() == id) {
-            if (item.getName() == null) {
-                item.setName(oldItem.getName());
-            }
-            if (item.getDescription() == null) {
-                item.setDescription(oldItem.getDescription());
-            }
-            if (item.getAvailable() == null) {
-                item.setAvailable(oldItem.getAvailable());
-            }
-            item.setId(itemId);
+            Item item = ItemMapper.toItemUpdate(itemDto, oldItem, userRepository.getUser(id));
             return ItemMapper.toItemDto(itemRepository.update(item, id));
         } else {
             throw new EntityNotFoundException("Не совпадает id владельца вещи");

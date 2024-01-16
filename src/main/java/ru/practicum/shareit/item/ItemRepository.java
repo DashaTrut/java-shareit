@@ -25,10 +25,6 @@ public class ItemRepository {
         if (!storageItem.containsKey(item.getId())) {
             throw new EntityNotFoundException(String.format("Обновление невозможно %s не сущесвует", item));
         }
-        int idOldUser = storageItem.get(item.getId()).getOwner().getId();
-        if (idOldUser != idUser) {
-            throw new EntityNotFoundException("Не совпадает id владельца вещи");
-        }
         storageItem.put(item.getId(), item);
         return item;
     }
