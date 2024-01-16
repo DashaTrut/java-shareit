@@ -46,13 +46,4 @@ public class ItemMapper {
                 .request(null)
                 .build();
     }
-
-    public static Item toItem(ItemDto itemDto) {
-        return Item.builder()
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable())
-                .request(null)
-                .build();
-    }
 }
