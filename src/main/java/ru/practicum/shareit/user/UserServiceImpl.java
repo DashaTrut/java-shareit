@@ -19,9 +19,7 @@ public class UserServiceImpl implements UserService {
     public UserDto create(UserDto userDto) {
         validate(userDto.getEmail());
         userDto.setId(generationId++);
-        return UserMapper.toUserDto
-                (userRepository.create(UserMapper.toUser(userDto)));
-
+        return UserMapper.toUserDto(userRepository.create(UserMapper.toUser(userDto)));
     }
 
     public UserDto getUser(int id) {
