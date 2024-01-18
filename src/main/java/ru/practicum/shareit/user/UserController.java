@@ -21,14 +21,14 @@ public class UserController {
     }
 
     @PostMapping //добавление пользователя;
-    public UserDto addUser(@Valid @RequestBody User user) {
+    public UserDto addUser(@Valid @RequestBody UserDto user) {
         log.info("Add user{}", user);
         return userServiceImpl.create(user);
     }
 
 
     @PatchMapping("{id}") //обновление пользователя;
-    public UserDto updateUser(@RequestBody User user, @PathVariable int id) {
+    public UserDto updateUser(@RequestBody UserDto user, @PathVariable int id) {
         log.info("Update user{}", user);
         return userServiceImpl.update(user, id);
     }

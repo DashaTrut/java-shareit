@@ -1,6 +1,6 @@
 package ru.practicum.shareit.user;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -10,18 +10,17 @@ import java.util.*;
 
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private int generationId = 1;
+    private final UserRepository userRepository;
+    private final Set emailUniqSet = new HashSet<>();
 
-    @Autowired
-    private UserRepository userRepository;
-    private final Map<Integer, String> emailUniqMap = new HashMap();
-
-
-    public UserDto create(User user) {
-        validate(user);
-        user.setId(generationId++);
-        return UserMapper.toUserDto(userRepository.create(user));
+    public UserDto create(UserDto userDto) {
+        validate(userDto.getEmail());
+        userDto.setId(generationId++);
+        return UserMapper.toUserDto
+                (userRepository.create(UserMapper.toUser(userDto)));
 
     }
 
@@ -29,11 +28,20 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(userRepository.getUser(id));
     }
 
-    public UserDto update(User user, int id) {
-        User user1 = userRepository.update(user, id);
-        validateUpdate(user1, id);
-        userRepository.putUpdate(user1);
-        return UserMapper.toUserDto(user1);
+    public UserDto update(UserDto userDto, int id) {
+        User oldUser = userRepository.getUser(id);
+        if (userDto.getName() != null) {
+            oldUser.setName(userDto.getName());
+        }
+        if (userDto.getEmail() != null) {
+            if (!userDto.getEmail().equals(oldUser.getEmail())) {
+                validate(userDto.getEmail());
+                emailUniqSet.remove(oldUser.getEmail());
+                oldUser.setEmail(userDto.getEmail());
+            }
+        }
+        userRepository.update((oldUser));
+        return UserMapper.toUserDto(oldUser);
     }
 
     public Collection<UserDto> getAll() {
@@ -41,25 +49,18 @@ public class UserServiceImpl implements UserService {
     }
 
     public void delete(int id) {
+        User user = userRepository.getUser(id);
         userRepository.delete(id);
-        emailUniqMap.put(id, null);
+        emailUniqSet.remove(user.getEmail());
     }
 
-    public void validate(User user) {
-        if (emailUniqMap.containsValue(user.getEmail())) {
+    public void validate(String email) {
+        if (emailUniqSet.contains(email)) {
             throw new ValidationException("Этот Email занят");
         } else {
-            emailUniqMap.put(generationId, user.getEmail());
+            emailUniqSet.add(email);
         }
-    }
-
-    public void validateUpdate(User user, int id) {
-        for (int i = 1; i <= emailUniqMap.size(); i++) {
-            String email = emailUniqMap.get(i);
-            if ((user.getEmail().equals(email) && (i != id))) {
-                throw new ValidationException("Этот Email занят");
-            }
-        }
-        emailUniqMap.put(id, user.getEmail());
     }
 }
+
+

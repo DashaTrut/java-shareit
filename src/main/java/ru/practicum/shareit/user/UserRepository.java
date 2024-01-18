@@ -21,24 +21,10 @@ public class UserRepository {
     }
 
 
-    public User update(User user, int id) {
-        if (!storageUser.containsKey(id)) {
-            throw new EntityNotFoundException(String.format("Обновление невозможно %s не сущесвует", user));
-        }
-        User oldUser = storageUser.get(id);
-        if (user.getName() == null) {
-            user.setName(oldUser.getName());
-        }
-        if (user.getEmail() == null) {
-            user.setEmail(oldUser.getEmail());
-        }
-        user.setId(id);
-        return user;
-    }
-
-    public void putUpdate(User user) {
+    public void update(User user) {
         storageUser.put(user.getId(), user);
     }
+
 
     public Collection<UserDto> getAll() {
         ArrayList<UserDto> list = new ArrayList<>();

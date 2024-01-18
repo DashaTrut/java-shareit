@@ -21,7 +21,7 @@ public class ItemRepository {
     }
 
 
-    public Item update(Item item, int idUser) {
+    public Item update(Item item) {
         if (!storageItem.containsKey(item.getId())) {
             throw new EntityNotFoundException(String.format("Обновление невозможно %s не сущесвует", item));
         }

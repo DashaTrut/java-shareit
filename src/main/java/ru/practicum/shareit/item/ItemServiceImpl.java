@@ -32,10 +32,18 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public ItemDto update(ItemDto itemDto, int id, int itemId) {
-        Item oldItem = getForIdItem(itemId);
-        if (oldItem.getOwner().getId() == id) {
-            Item item = ItemMapper.toItemUpdate(itemDto, oldItem, userRepository.getUser(id));
-            return ItemMapper.toItemDto(itemRepository.update(item, id));
+        Item item = getForIdItem(itemId);
+        if (item.getOwner().getId() == id) {
+            if (itemDto.getName() != null) {
+                item.setName(itemDto.getName());
+            }
+            if (itemDto.getDescription() != null) {
+                item.setDescription(itemDto.getDescription());
+            }
+            if (itemDto.getAvailable() != null) {
+                item.setAvailable(itemDto.getAvailable());
+            }
+            return ItemMapper.toItemDto(itemRepository.update(item));
         } else {
             throw new EntityNotFoundException("Не совпадает id владельца вещи");
         }
