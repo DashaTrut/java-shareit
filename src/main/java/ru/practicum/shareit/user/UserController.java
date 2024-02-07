@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -17,13 +19,13 @@ public class UserController {
 
     @GetMapping
     public Collection<UserDto> getUsers() {  //    получение списка всех пользователей.
-        return userServiceImpl.getAll();
+        return UserMapper.mapToUserDto(userServiceImpl.getAll());
     }
 
     @PostMapping //добавление пользователя;
     public UserDto addUser(@Valid @RequestBody UserDto user) {
         log.info("Add user{}", user);
-        return userServiceImpl.create(user);
+        return UserMapper.toUserDto(userServiceImpl.create(UserMapper.toUser(user)));
     }
 
 
@@ -36,7 +38,7 @@ public class UserController {
     @GetMapping("{id}")
     public UserDto getForId(@PathVariable int id) {
         log.info("Get user id{}", id);
-        return userServiceImpl.getUser(id);
+        return UserMapper.toUserDto(userServiceImpl.getUser(id));
     }
 
     @DeleteMapping("{id}")

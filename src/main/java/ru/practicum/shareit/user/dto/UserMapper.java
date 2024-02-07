@@ -3,6 +3,9 @@ package ru.practicum.shareit.user.dto;
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.user.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @UtilityClass
 public class UserMapper {
     public UserDto toUserDto(User user) {
@@ -17,5 +20,13 @@ public class UserMapper {
                 userDto.getId(),
                 userDto.getEmail(),
                 userDto.getName());
+    }
+
+    public List<UserDto> mapToUserDto(Iterable<User> users) {
+        List<UserDto> result = new ArrayList<>();
+        for (User user : users) {
+            result.add(toUserDto(user));
+        }
+        return result;
     }
 }
