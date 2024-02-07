@@ -17,9 +17,7 @@ import java.util.Objects;
 @Entity
 @ToString
 @Table(name = "booking", schema = "public")
-public class Booking implements Serializable {
-
-
+public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

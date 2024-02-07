@@ -16,7 +16,7 @@ import java.util.Objects;
 @Table(name = "comments", schema = "public")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Comment implements Serializable {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
