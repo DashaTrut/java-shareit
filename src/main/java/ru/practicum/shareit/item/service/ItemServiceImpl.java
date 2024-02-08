@@ -60,7 +60,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
 
-    public ItemDtoBooking getForIdWithBooking(Integer itemId, Integer userId) {
+    public ItemDtoBooking getForIdWithBooking(int itemId, int userId) {
         Item item = itemRepositoryJpa.findById(itemId).orElseThrow(() ->
                 new EntityNotFoundException("Вещи не существует"));
         User user = userRepositoryJpa.findById(userId).orElseThrow(() ->
