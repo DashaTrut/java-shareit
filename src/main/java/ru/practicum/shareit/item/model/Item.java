@@ -22,7 +22,7 @@ import java.util.Set;
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
     @NotBlank
     private String name;
     @ManyToOne(fetch = FetchType.LAZY)

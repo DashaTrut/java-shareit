@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.booking.model.Booking;
@@ -10,24 +11,24 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface BookingRepositoryJpa extends JpaRepository<Booking, Integer> {
-    public Collection<Booking> findByBookerIdOrderByStartDesc(Integer bookerId);
+    public Collection<Booking> findByBookerIdOrderByStartDesc(Integer bookerId, Sort sort);
 
-    public Collection<Booking> findByBookerIdAndStatusOrderByStartDesc(Integer bookerId, Status status);
+    public Collection<Booking> findByBookerIdAndStatus(Integer bookerId, Status status, Sort sort);
 
-    @Query(value = "select * " +
-            "from booking as bo join users as us on bo.booker_id = us.id join items as it on bo.item_id = it.id  " +
-            "where bo.booker_id = ?1 and bo.start_time < ?2 and  bo.end_time > ?2 " +
-            "ORDER BY bo.start_time DESC", nativeQuery = true)
+    @Query("select bo " +
+            "from Booking bo " +
+            "where bo.booker.id = ?1 and bo.start < ?2 and bo.end > ?2 " +
+            "ORDER BY bo.start DESC")
     Collection<Booking> findByBookerIdCurrent(Integer bookerId, LocalDateTime now);
 
 
-    @Query(value = "select * " +
-            "from booking as bo join users as us on bo.booker_id = us.id join items as it on bo.item_id = it.id  " +
-            "where bo.booker_id = ?1 and  bo.end_time > ?2 " +
-            "ORDER BY bo.start_time DESC", nativeQuery = true)
+    @Query(value = "select bo " +
+            "from Booking as bo " +
+            "where bo.booker.id = ?1 and  bo.end > ?2 " +
+            "ORDER BY bo.start DESC")
     Collection<Booking> findByBookerIdFuture(Integer bookerId, LocalDateTime localDateTime);
 
-    public Collection<Booking> findByBookerIdAndEndBeforeOrderByStartDesc(Integer bookerId, LocalDateTime now);
+    public Collection<Booking> findByBookerIdAndEndBefore(Integer bookerId, LocalDateTime now, Sort sort);
 
 
     @Query(value = "select * " +
@@ -36,16 +37,7 @@ public interface BookingRepositoryJpa extends JpaRepository<Booking, Integer> {
             "ORDER BY bo.start_time DESC", nativeQuery = true)
     Collection<Booking> findByItemOwnerOrderByStartDesc(Integer idUser);
 
-    @Query(value = "select bo.id, bo.start_time, bo.end_time, it.id, us.id, bo.status, " +
-            "it.name, it.user_owner, it.description, it.available, it.request, " +
-            "us.name, us.email " +
-            "from booking as bo join users as us on bo.booker_id = us.id join items as it on bo.item_id = it.id  " +
-            "where it.user_owner = ?1 and bo.status = ?2 " +
-            "ORDER BY bo.start_time DESC ", nativeQuery = true)
-    Collection<Booking> findByItemOwnerAndStatusOrderByStartDesc(Integer idUser, Status status);
-
-
-    public Collection<Booking> findAllByItemOwnerIdAndStatusOrderByStartDesc(Integer bookerId, Status status);
+    public Collection<Booking> findAllByItemOwnerIdAndStatus(Integer bookerId, Status status, Sort sort);
 
     @Query(value = "select * " +
             "from booking as bo join users as us on bo.booker_id = us.id join items as it on bo.item_id = it.id  " +
@@ -82,7 +74,6 @@ public interface BookingRepositoryJpa extends JpaRepository<Booking, Integer> {
     Booking findByItemIdFuture(Integer itemId, LocalDateTime localDateTime);
 
     public Booking findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(Integer itemId, LocalDateTime localDateTime, Status status);
-
 
     public Optional<Booking> findFirstByBookerIdAndItemIdAndEndBefore(Integer bookerId, Integer itemId, LocalDateTime now);
 }

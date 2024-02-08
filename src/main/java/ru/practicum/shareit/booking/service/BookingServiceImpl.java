@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking.service;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.BookingRepositoryJpa;
@@ -20,6 +22,7 @@ import ru.practicum.shareit.user.repository.UserRepositoryJpa;
 import java.time.LocalDateTime;
 import java.util.Collection;
 
+import static ru.practicum.shareit.booking.model.Status.REJECTED;
 import static ru.practicum.shareit.booking.model.Status.WAITING;
 
 @Service
@@ -29,51 +32,43 @@ public class BookingServiceImpl {
     private final UserRepositoryJpa userRepositoryJpa;
     private final BookingRepositoryJpa bookingRepositoryJpa;
 
-    public Booking create(BookingDto bookingDto, Integer id) {
-        if (id != null) {
-            User user = userRepositoryJpa.findById(id).orElseThrow(() ->
-                    new EntityNotFoundException("Пользователя не существует"));
-            Item item = itemRepositoryJpa.findById(bookingDto.getItemId()).orElseThrow(() ->
-                    new EntityNotFoundException("Вещи не существует"));
-            if (item.getOwner().getId() == id) {
-                throw new EntityNotFoundException("нельзя бронировать свою вещь");
-            }
-            if (item.getAvailable() == false || bookingDto.getStart().isAfter(bookingDto.getEnd()) ||
-                    bookingDto.getStart().isEqual(bookingDto.getEnd())) {
-                throw new BookingException("Бронирование вещи невозможно");
-            }
-            Booking booking = BookingMapper.toBooking(bookingDto, user, item);
-            Booking result = bookingRepositoryJpa.save(booking);
-            return result;
+    public Booking create(BookingDto bookingDto, int id) {
+        User user = userRepositoryJpa.findById(id).orElseThrow(() ->
+                new EntityNotFoundException("Пользователя не существует"));
+        Item item = itemRepositoryJpa.findById(bookingDto.getItemId()).orElseThrow(() ->
+                new EntityNotFoundException("Вещи не существует"));
+        if (item.getOwner().getId() == id) {
+            throw new EntityNotFoundException("нельзя бронировать свою вещь");
+        }
+        if (item.getAvailable() == false || bookingDto.getStart().isAfter(bookingDto.getEnd()) ||
+                bookingDto.getStart().isEqual(bookingDto.getEnd())) {
+            throw new BookingException("Бронирование вещи невозможно");
+        }
+        Booking booking = BookingMapper.toBooking(bookingDto, user, item);
+        Booking result = bookingRepositoryJpa.save(booking);
+        return result;
+    }
+
+    public Booking updateStatusBooking(int idBooking, Status status, int idUser) {
+
+        Booking booking = bookingRepositoryJpa.findById(idBooking).orElseThrow(() ->
+                new EntityNotFoundException("Бронирования не существует"));
+        if (booking.getStatus() == status) {
+            throw new BookingException("Вы уже изменили статус");
+        }
+        Item item = itemRepositoryJpa.findById(booking.getItem().getId()).orElseThrow(() ->
+                new EntityNotFoundException("Вещи не существует"));
+        User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
+                new EntityNotFoundException("Пользователя не существует"));
+        if (item.getOwner().getId() == idUser) {
+            booking.setStatus(status);
+            return bookingRepositoryJpa.save(booking);
         } else {
-            throw new EntityNotFoundException("не передали id");
+            throw new EntityNotFoundException("Только владелец может подтвердить бронирование вещи");
         }
     }
 
-    public Booking updateStatusBooking(Integer idBooking, Status status, Integer idUser) {
-        if (idUser != null) {
-            Booking booking = bookingRepositoryJpa.findById(idBooking).orElseThrow(() ->
-                    new EntityNotFoundException("Бронирования не существует"));
-            if (booking.getStatus() == status) {
-                throw new BookingException("Вы уже изменили статус");
-            }
-            Item item = itemRepositoryJpa.findById(booking.getItem().getId()).orElseThrow(() ->
-                    new EntityNotFoundException("Вещи не существует"));
-            User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
-                    new EntityNotFoundException("Пользователя не существует"));
-            if (item.getOwner().getId() == idUser) {
-                booking.setStatus(status);
-                return bookingRepositoryJpa.save(booking);
-            } else {
-                throw new EntityNotFoundException("Только владелец может подтвердить бронирование вещи");
-            }
-        } else {
-            throw new EntityNotFoundException("не передали id");
-        }
-
-    }
-
-    public Booking getBooking(Integer bookingId, Integer idUser) {
+    public Booking getBooking(int bookingId, int idUser) {
         Booking booking = bookingRepositoryJpa.findById(bookingId).orElseThrow(() ->
                 new EntityNotFoundException("Бронирования не существует"));
         if (idUser == booking.getBooker().getId() || idUser == booking.getItem().getOwner().getId()) {
@@ -83,29 +78,29 @@ public class BookingServiceImpl {
         }
     }
 
-    public Collection<Booking> getBookingForState(Integer idUser, String string) {
+    public Collection<Booking> getBookingForState(int idUser, String string) {
         State state = chekState(string);
         User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
                 new EntityNotFoundException("Пользователя не существует"));
         switch (state) {
             case ALL:
-                return bookingRepositoryJpa.findByBookerIdOrderByStartDesc(idUser);
+                return bookingRepositoryJpa.findByBookerIdOrderByStartDesc(idUser, Sort.by(Sort.Direction.DESC, "start"));
             case WAITING:
-                return bookingRepositoryJpa.findByBookerIdAndStatusOrderByStartDesc(idUser, WAITING);
+                return bookingRepositoryJpa.findByBookerIdAndStatus(idUser, WAITING, Sort.by(Sort.Direction.DESC, "start"));
             case REJECTED:
-                return bookingRepositoryJpa.findByBookerIdAndStatusOrderByStartDesc(idUser, Status.REJECTED);
+                return bookingRepositoryJpa.findByBookerIdAndStatus(idUser, REJECTED, Sort.by(Sort.Direction.DESC, "start"));
             case CURRENT:
                 return bookingRepositoryJpa.findByBookerIdCurrent(idUser, LocalDateTime.now());
             case FUTURE:
                 return bookingRepositoryJpa.findByBookerIdFuture(idUser, LocalDateTime.now());
             case PAST:
-                return bookingRepositoryJpa.findByBookerIdAndEndBeforeOrderByStartDesc(idUser, LocalDateTime.now());
+                return bookingRepositoryJpa.findByBookerIdAndEndBefore(idUser, LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start"));
             default:
                 throw new BookingException("У пользователя нет бронирований");
         }
     }
 
-    public Collection<Booking> getBookingForOwnerAndState(Integer idUser, String string) {
+    public Collection<Booking> getBookingForOwnerAndState(int idUser, String string) {
         State state = chekState(string);
         User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
                 new EntityNotFoundException("Пользователя не существует"));
@@ -117,9 +112,9 @@ public class BookingServiceImpl {
             case ALL:
                 return bookingRepositoryJpa.findByItemOwnerOrderByStartDesc(idUser);
             case WAITING:
-                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatusOrderByStartDesc(idUser, Status.WAITING);
+                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, WAITING, Sort.by(Sort.Direction.DESC, "start"));
             case REJECTED:
-                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatusOrderByStartDesc(idUser, Status.REJECTED);
+                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, REJECTED, Sort.by(Sort.Direction.DESC, "start"));
             case CURRENT:
                 return bookingRepositoryJpa.findByItemOwnerCurrent(idUser, LocalDateTime.now());
             case FUTURE:
