@@ -33,10 +33,10 @@ public class BookingMapper {
     }
 
 
-    public List<BookingDto> mapToBookingDto(Iterable<Booking> bookings) {
-        List<BookingDto> result = new ArrayList<>();
+    public List<BookingDtoResponse> mapToBookingDtoResponse(Iterable<Booking> bookings) {
+        List<BookingDtoResponse> result = new ArrayList<>();
         for (Booking booking : bookings) {
-            result.add(toBookingDto(booking));
+            result.add(toBookingDtoResponse(booking));
         }
         return result;
     }
@@ -46,6 +46,18 @@ public class BookingMapper {
                 .id(booking.getId())
                 .bookerId(booking.getBooker().getId())
                 .build();
+    }
+
+    public BookingDtoResponse toBookingDtoResponse(Booking booking) {
+        return BookingDtoResponse.builder()
+                .id(booking.getId())
+                .start(booking.getStart())
+                .end(booking.getEnd())
+                .item(booking.getItem())
+                .booker(booking.getBooker())
+                .status(booking.getStatus())
+                .build();
+
     }
 }
 

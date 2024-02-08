@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.BookingRepositoryJpa;
 import ru.practicum.shareit.booking.model.State;
@@ -30,7 +31,9 @@ public class BookingServiceImpl {
     private final ItemRepositoryJpa itemRepositoryJpa;
     private final UserRepositoryJpa userRepositoryJpa;
     private final BookingRepositoryJpa bookingRepositoryJpa;
+    private Sort start = Sort.by(Sort.Direction.DESC, "start");
 
+    @Transactional(readOnly = true)
     public Booking create(BookingDto bookingDto, int id) {
         User user = userRepositoryJpa.findById(id).orElseThrow(() ->
                 new EntityNotFoundException("Пользователя не существует"));
@@ -48,8 +51,14 @@ public class BookingServiceImpl {
         return result;
     }
 
-    public Booking updateStatusBooking(int idBooking, Status status, int idUser) {
-
+    @Transactional
+    public Booking updateStatusBooking(int idBooking, Boolean approved, int idUser) {
+        Status status;
+        if (approved) {
+            status = Status.APPROVED;
+        } else {
+            status = Status.REJECTED;
+        }
         Booking booking = bookingRepositoryJpa.findById(idBooking).orElseThrow(() ->
                 new EntityNotFoundException("Бронирования не существует"));
         if (booking.getStatus() == status) {
@@ -67,6 +76,7 @@ public class BookingServiceImpl {
         }
     }
 
+    @Transactional(readOnly = true)
     public Booking getBooking(int bookingId, int idUser) {
         Booking booking = bookingRepositoryJpa.findById(bookingId).orElseThrow(() ->
                 new EntityNotFoundException("Бронирования не существует"));
@@ -77,6 +87,7 @@ public class BookingServiceImpl {
         }
     }
 
+    @Transactional(readOnly = true)
     public Collection<Booking> getBookingForState(int idUser, String string) {
         State state = chekState(string);
         User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
@@ -85,20 +96,21 @@ public class BookingServiceImpl {
             case ALL:
                 return bookingRepositoryJpa.findByBookerIdOrderByStartDesc(idUser, Sort.by(Sort.Direction.DESC, "start"));
             case WAITING:
-                return bookingRepositoryJpa.findByBookerIdAndStatus(idUser, WAITING, Sort.by(Sort.Direction.DESC, "start"));
+                return bookingRepositoryJpa.findByBookerIdAndStatus(idUser, WAITING, start);
             case REJECTED:
-                return bookingRepositoryJpa.findByBookerIdAndStatus(idUser, REJECTED, Sort.by(Sort.Direction.DESC, "start"));
+                return bookingRepositoryJpa.findByBookerIdAndStatus(idUser, REJECTED, start);
             case CURRENT:
-                return bookingRepositoryJpa.findByBookerIdCurrent(idUser, LocalDateTime.now());
+                return bookingRepositoryJpa.findByBookerIdCurrent(idUser, LocalDateTime.now(), start);
             case FUTURE:
-                return bookingRepositoryJpa.findByBookerIdFuture(idUser, LocalDateTime.now());
+                return bookingRepositoryJpa.findByBookerIdFuture(idUser, LocalDateTime.now(), start);
             case PAST:
-                return bookingRepositoryJpa.findByBookerIdAndEndBefore(idUser, LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start"));
+                return bookingRepositoryJpa.findByBookerIdAndEndBefore(idUser, LocalDateTime.now(), start);
             default:
                 throw new BookingException("У пользователя нет бронирований");
         }
     }
 
+    @Transactional(readOnly = true)
     public Collection<Booking> getBookingForOwnerAndState(int idUser, String string) {
         State state = chekState(string);
         User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
@@ -109,17 +121,17 @@ public class BookingServiceImpl {
         }
         switch (state) {
             case ALL:
-                return bookingRepositoryJpa.findByItemOwnerOrderByStartDesc(idUser);
+                return bookingRepositoryJpa.findByItemOwnerOrderByStartDesc(idUser, start);
             case WAITING:
-                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, WAITING, Sort.by(Sort.Direction.DESC, "start"));
+                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, WAITING, start);
             case REJECTED:
-                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, REJECTED, Sort.by(Sort.Direction.DESC, "start"));
+                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, REJECTED, start);
             case CURRENT:
-                return bookingRepositoryJpa.findByItemOwnerCurrent(idUser, LocalDateTime.now());
+                return bookingRepositoryJpa.findByItemOwnerCurrent(idUser, LocalDateTime.now(), start);
             case FUTURE:
-                return bookingRepositoryJpa.findByItemOwnerFuture(idUser, LocalDateTime.now());
+                return bookingRepositoryJpa.findByItemOwnerFuture(idUser, LocalDateTime.now(), start);
             case PAST:
-                return bookingRepositoryJpa.findByItemOwnerPaste(idUser, LocalDateTime.now());
+                return bookingRepositoryJpa.findByItemOwnerPaste(idUser, LocalDateTime.now(), start);
             default:
                 throw new BookingException("У пользователя нет вещей");
         }

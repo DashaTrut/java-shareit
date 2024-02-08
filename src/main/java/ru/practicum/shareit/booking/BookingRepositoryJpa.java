@@ -17,63 +17,39 @@ public interface BookingRepositoryJpa extends JpaRepository<Booking, Integer> {
 
     @Query("select bo " +
             "from Booking bo " +
-            "where bo.booker.id = ?1 and bo.start < ?2 and bo.end > ?2 " +
-            "ORDER BY bo.start DESC")
-    Collection<Booking> findByBookerIdCurrent(Integer bookerId, LocalDateTime now);
+            "where bo.booker.id = ?1 and bo.start < ?2 and bo.end > ?2 ")
+    Collection<Booking> findByBookerIdCurrent(Integer bookerId, LocalDateTime now, Sort sort);
 
 
     @Query(value = "select bo " +
             "from Booking as bo " +
-            "where bo.booker.id = ?1 and  bo.end > ?2 " +
-            "ORDER BY bo.start DESC")
-    Collection<Booking> findByBookerIdFuture(Integer bookerId, LocalDateTime localDateTime);
+            "where bo.booker.id = ?1 and  bo.end > ?2 ")
+    Collection<Booking> findByBookerIdFuture(Integer bookerId, LocalDateTime localDateTime, Sort sort);
 
     public Collection<Booking> findByBookerIdAndEndBefore(Integer bookerId, LocalDateTime now, Sort sort);
 
 
-    @Query(value = "select * " +
-            "from booking as bo join users as us on bo.booker_id = us.id join items as it on bo.item_id = it.id  " +
-            "where it.user_owner = ? " +
-            "ORDER BY bo.start_time DESC", nativeQuery = true)
-    Collection<Booking> findByItemOwnerOrderByStartDesc(Integer idUser);
+    @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 ")
+    Collection<Booking> findByItemOwnerOrderByStartDesc(Integer idUser, Sort sort);
 
     public Collection<Booking> findAllByItemOwnerIdAndStatus(Integer bookerId, Status status, Sort sort);
 
-    @Query(value = "select * " +
-            "from booking as bo join users as us on bo.booker_id = us.id join items as it on bo.item_id = it.id  " +
-            "where it.user_owner = ?1 and  bo.end_time > ?2 " +
-            "ORDER BY bo.start_time DESC", nativeQuery = true)
-    Collection<Booking> findByItemOwnerFuture(Integer bookerId, LocalDateTime localDateTime);
+    @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.end > ?2")
+    Collection<Booking> findByItemOwnerFuture(Integer bookerId, LocalDateTime localDateTime, Sort sort);
 
-    @Query(value = "select * " +
-            "from booking as bo join users as us on bo.booker_id = us.id join items as it on bo.item_id = it.id  " +
-            "where it.user_owner = ?1 and  bo.end_time < ?2 " +
-            "ORDER BY bo.start_time DESC", nativeQuery = true)
-    Collection<Booking> findByItemOwnerPaste(Integer bookerId, LocalDateTime localDateTime);
+    @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.end < ?2")
+    Collection<Booking> findByItemOwnerPaste(Integer bookerId, LocalDateTime localDateTime, Sort sort);
 
-    @Query(value = "select * " +
-            "from booking as bo join users as us on bo.booker_id = us.id join items as it on bo.item_id = it.id  " +
-            "where it.user_owner = ?1 and  bo.start_time < ?2 and bo.end_time > ?2 " +
-            "ORDER BY bo.start_time DESC", nativeQuery = true)
-    Collection<Booking> findByItemOwnerCurrent(Integer bookerId, LocalDateTime localDateTime);
+    @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.start < ?2 AND b.end > ?2")
+    Collection<Booking> findByItemOwnerCurrent(Integer bookerId, LocalDateTime localDateTime, Sort sort);
 
-    @Query(value = "select * " +
-            "from booking as bo join users as us on bo.booker_id = us.id join items as it on bo.item_id = it.id  " +
-            "where it.id = ?1 and  bo.end_time < ?2 " +
-            "ORDER BY bo.start_time DESC " +
-            "limit 1", nativeQuery = true)
-    Booking findByItemIdPaste(Integer itemId, LocalDateTime localDateTime);
+    Booking findFirstByItemIdAndEndBefore(Integer itemId, LocalDateTime localDateTime, Sort sort);
 
-    public Booking findFirstByItemIdAndStartBeforeOrderByEndDesc(Integer itemId, LocalDateTime localDateTime);
+    public Booking findFirstByItemIdAndStartBefore(Integer itemId, LocalDateTime localDateTime, Sort sort);
 
-    @Query(value = "select * " +
-            "from booking as bo join users as us on bo.booker_id = us.id join items as it on bo.item_id = it.id  " +
-            "where it.id = ?1 and  bo.start_time > ?2 " +
-            "ORDER BY bo.start_time ASC " +
-            "limit 1", nativeQuery = true)
-    Booking findByItemIdFuture(Integer itemId, LocalDateTime localDateTime);
+    Booking findFirstByItemIdAndStartAfter(Integer itemId, LocalDateTime localDateTime, Sort sort);
 
-    public Booking findFirstByItemIdAndStartAfterAndStatusOrderByStartAsc(Integer itemId, LocalDateTime localDateTime, Status status);
+    public Booking findFirstByItemIdAndStartAfterAndStatus(Integer itemId, LocalDateTime localDateTime, Status status, Sort sort);
 
     public Optional<Booking> findFirstByBookerIdAndItemIdAndEndBefore(Integer bookerId, Integer itemId, LocalDateTime now);
 }

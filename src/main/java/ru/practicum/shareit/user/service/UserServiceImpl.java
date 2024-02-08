@@ -19,6 +19,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepositoryJpa userRepositoryJpa;
 
+    @Transactional(readOnly = true)
     public User create(User user) {
         try {
             return userRepositoryJpa.save(user);
@@ -34,6 +35,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
+    @Transactional
     public UserDto update(UserDto userDto, int id) {
         User oldUser = getUser(id);
         if (userDto.getName() != null) {
@@ -56,6 +58,7 @@ public class UserServiceImpl implements UserService {
         return userRepositoryJpa.findAll();
     }
 
+    @Transactional
     public void delete(int id) {
         User user = getUser(id);
         userRepositoryJpa.delete(user);
