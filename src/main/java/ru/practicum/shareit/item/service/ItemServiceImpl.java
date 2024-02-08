@@ -28,16 +28,13 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepositoryJpa commentRepositoryJpa;
 
     //добавление вещи;
-    public Item add(ItemDto itemDto, Integer id) {
-        if (id != null) {
-            User user = userRepositoryJpa.findById(id).orElseThrow(() ->
-                    new EntityNotFoundException("Пользователя не существует"));
-            Item itemCreate = itemRepositoryJpa.save(ItemMapper.toItem(itemDto, user));
-            return itemCreate;
-        } else {
-            throw new EntityNotFoundException("не передали id");
-        }
+    public Item add(ItemDto itemDto, int id) {
+        User user = userRepositoryJpa.findById(id).orElseThrow(() ->
+                new EntityNotFoundException("Пользователя не существует"));
+        Item itemCreate = itemRepositoryJpa.save(ItemMapper.toItem(itemDto, user));
+        return itemCreate;
     }
+
 
     public ItemDto update(ItemDto itemDto, int id, int itemId) {
         Item item = getForId(itemId);
