@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.service;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
