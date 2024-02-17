@@ -68,7 +68,7 @@ class BookingRepositoryJpaTest {
         itemRequest = requestRepository.save(ItemRequest.builder()
                 .created(LocalDateTime.now())
                 .description("test request")
-                .requestor(user)
+                .requester(user)
                 .build());
         user1 = userRepository.save(User.builder()
                 .email("trut@email.com")
@@ -83,7 +83,7 @@ class BookingRepositoryJpaTest {
         itemRequest1 = requestRepository.save(ItemRequest.builder()
                 .created(LocalDateTime.now())
                 .description("test request two")
-                .requestor(user1)
+                .requester(user1)
                 .build());
 
         item = itemRepository.save(Item.builder()

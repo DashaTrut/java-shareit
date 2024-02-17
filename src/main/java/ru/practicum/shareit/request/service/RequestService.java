@@ -39,7 +39,7 @@ public class RequestService {
         User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
                 new EntityNotFoundException("Пользователя не существует"));
         Set<RequestDtoWithFeedbackItem> result = new HashSet<>();
-        Collection<ItemRequest> set = requestRepositoryJpa.findAllByRequestorId(idUser);
+        Collection<ItemRequest> set = requestRepositoryJpa.findAllByRequesterId(idUser);
         if (!set.isEmpty()) {
             for (ItemRequest itemRequest : set) {
                 Collection<Item> items = itemRepositoryJpa.findAllByRequest(itemRequest.getId());
@@ -65,9 +65,9 @@ public class RequestService {
         List<RequestDtoWithFeedbackItem> result = new ArrayList<>();
         List<ItemRequest> list;
         if (page == null && size == null) {
-            list = requestRepositoryJpa.findAllByRequestorIdNot(idUser);
+            list = requestRepositoryJpa.findAllByRequesterIdNot(idUser);
         } else {
-            list = requestRepositoryJpa.findAllByRequestorIdNot(
+            list = requestRepositoryJpa.findAllByRequesterIdNot(
                     idUser, PageRequest.of(page, size, Sort.Direction.DESC, "created"));
         }
         for (ItemRequest itemRequest : list) {

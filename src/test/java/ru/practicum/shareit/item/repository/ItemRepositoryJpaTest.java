@@ -39,7 +39,7 @@ class ItemRepositoryJpaTest {
         itemRequest = requestRepository.save(ItemRequest.builder()
                 .created(LocalDateTime.now())
                 .description("test request")
-                .requestor(user)
+                .requester(user)
                 .build());
 
         item = itemRepository.save(Item.builder()

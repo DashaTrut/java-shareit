@@ -30,7 +30,6 @@ class RequestRepositoryJpaTest {
     private RequestRepositoryJpa requestRepository;
 
     private User user;
-    private Item item;
     private ItemRequest itemRequest;
     private User user1;
     private User user2;
@@ -46,7 +45,7 @@ class RequestRepositoryJpaTest {
         itemRequest = requestRepository.save(ItemRequest.builder()
                 .created(LocalDateTime.now())
                 .description("test request")
-                .requestor(user)
+                .requester(user)
                 .build());
         user1 = userRepository.save(User.builder()
                 .email("trut@email.com")
@@ -61,7 +60,7 @@ class RequestRepositoryJpaTest {
         itemRequest1 = requestRepository.save(ItemRequest.builder()
                 .created(LocalDateTime.now())
                 .description("test request two")
-                .requestor(user1)
+                .requester(user1)
                 .build());
 
         itemRepository.save(Item.builder()
@@ -75,7 +74,7 @@ class RequestRepositoryJpaTest {
 
     @Test
     void findAllByRequestorId() {
-        Collection<ItemRequest> actualItemRequest = requestRepository.findAllByRequestorId(user1.getId());
+        Collection<ItemRequest> actualItemRequest = requestRepository.findAllByRequesterId(user1.getId());
         assertTrue(!actualItemRequest.isEmpty());
         assertEquals(actualItemRequest.size(), 1);
         assertEquals(actualItemRequest, List.of(itemRequest1));
@@ -83,7 +82,7 @@ class RequestRepositoryJpaTest {
 
     @Test
     void findAllByRequestorIdNot() {
-        List<ItemRequest> actualItemRequest = requestRepository.findAllByRequestorIdNot(user1.getId());
+        List<ItemRequest> actualItemRequest = requestRepository.findAllByRequesterIdNot(user1.getId());
         assertTrue(!actualItemRequest.isEmpty());
         assertEquals(actualItemRequest.size(), 1);
         assertEquals(actualItemRequest, List.of(itemRequest));
@@ -91,7 +90,7 @@ class RequestRepositoryJpaTest {
 
     @Test
     void findAllByRequestorIdNotPage() {
-        List<ItemRequest> actualItemRequest = requestRepository.findAllByRequestorIdNot(user2.getId(), PageRequest.of(1, 1, Sort.Direction.DESC, "created"));
+        List<ItemRequest> actualItemRequest = requestRepository.findAllByRequesterIdNot(user2.getId(), PageRequest.of(1, 1, Sort.Direction.DESC, "created"));
         assertTrue(!actualItemRequest.isEmpty());
         assertEquals(actualItemRequest.size(), 1);
         assertEquals(actualItemRequest, List.of(itemRequest));

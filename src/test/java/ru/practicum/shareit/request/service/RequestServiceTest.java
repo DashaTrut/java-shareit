@@ -96,7 +96,7 @@ class RequestServiceTest {
         RequestDtoWithFeedbackItem requestDtoWithFeedbackItem = new RequestDtoWithFeedbackItem(1, "want item", time, List.of(itemDto));
 
         when(userRepositoryJpa.findById(userId)).thenReturn(Optional.of(userToSave));
-        when(requestRepositoryJpa.findAllByRequestorId(userId)).thenReturn(Set.of(itemRequest));
+        when(requestRepositoryJpa.findAllByRequesterId(userId)).thenReturn(Set.of(itemRequest));
         when(itemRepositoryJpa.findAllByRequest(requestId)).thenReturn(List.of(item));
         Set<RequestDtoWithFeedbackItem> actualItemRequest = requestService.getRequestUserAll(userId);
 
@@ -127,13 +127,13 @@ class RequestServiceTest {
         RequestDtoWithFeedbackItem requestDtoWithFeedbackItem = new RequestDtoWithFeedbackItem(1, "want item", time, List.of(itemDto, ItemMapper.toItemDto(item2)));
 
         when(userRepositoryJpa.findById(userId)).thenReturn(Optional.of(userToSave));
-        when(requestRepositoryJpa.findAllByRequestorIdNot(userId)).thenReturn(List.of(itemRequest));
+        when(requestRepositoryJpa.findAllByRequesterIdNot(userId)).thenReturn(List.of(itemRequest));
         when(itemRepositoryJpa.findAllByRequest(requestId)).thenReturn(List.of(item, item2));
         List<RequestDtoWithFeedbackItem> actualItemRequest = requestService.getRequestAllPage(userId, null, null);
 
         assertNotNull(actualItemRequest);
         assertEquals(List.of(requestDtoWithFeedbackItem), actualItemRequest);
-        verify(requestRepositoryJpa, never()).findAllByRequestorIdNot(anyInt(), any(PageRequest.class));
+        verify(requestRepositoryJpa, never()).findAllByRequesterIdNot(anyInt(), any(PageRequest.class));
     }
 
     @Test
@@ -150,7 +150,7 @@ class RequestServiceTest {
         RequestDtoWithFeedbackItem requestDtoWithFeedbackItem = new RequestDtoWithFeedbackItem(1, "want item", time, List.of(itemDto, ItemMapper.toItemDto(item2)));
 
         when(userRepositoryJpa.findById(userId)).thenReturn(Optional.of(userToSave));
-        when(requestRepositoryJpa.findAllByRequestorIdNot(anyInt(), any(PageRequest.class))).thenReturn(List.of(itemRequest));
+        when(requestRepositoryJpa.findAllByRequesterIdNot(anyInt(), any(PageRequest.class))).thenReturn(List.of(itemRequest));
         when(itemRepositoryJpa.findAllByRequest(requestId)).thenReturn(List.of(item, item2));
         List<RequestDtoWithFeedbackItem> actualItemRequest = requestService.getRequestAllPage(userId, 1, 1);
 
@@ -165,7 +165,7 @@ class RequestServiceTest {
         when(userRepositoryJpa.findById(userId)).thenThrow(EntityNotFoundException.class);
         assertThrows(EntityNotFoundException.class, () -> requestService.getRequestAllPage(userId, null, null));
 
-        verify(requestRepositoryJpa, never()).findAllByRequestorIdNot(anyInt());
+        verify(requestRepositoryJpa, never()).findAllByRequesterIdNot(anyInt());
     }
 
 }
