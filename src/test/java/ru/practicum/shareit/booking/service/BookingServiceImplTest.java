@@ -26,6 +26,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static ru.practicum.shareit.booking.model.Status.REJECTED;
 import static ru.practicum.shareit.booking.model.Status.WAITING;
 
 @ExtendWith(MockitoExtension.class)
@@ -97,6 +98,29 @@ class BookingServiceImplTest {
     }
 
     @Test
+    public void testUpdateStatusBooking_isSaveFalse() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(1);
+        BookingDto bookingDto = new BookingDto(10, localDateTime, localDateTime1);
+
+        User user = new User(1, "test@email.com", "lasa");
+        Item item = new Item(10, "table", user, "big table", false, null, new HashSet<>());
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user2, Status.WAITING);
+        Booking bookingUpdate = new Booking(1, localDateTime, localDateTime1, item, user2, Status.APPROVED);
+
+        when(userRepositoryJpa.findById(1)).thenReturn(Optional.of(user));
+        when(itemRepositoryJpa.findById(10)).thenReturn(Optional.of(item));
+        when(bookingRepository.findById(1)).thenReturn(Optional.of(bookingNew));
+        when(bookingRepository.save(bookingUpdate)).thenReturn(bookingNew);
+
+        Booking booking = bookingService.updateStatusBooking(1, true, 1);
+        assertNotNull(booking);
+        assertEquals(bookingUpdate, booking);
+        assertEquals(bookingUpdate.getStatus(), booking.getStatus());
+    }
+
+    @Test
     public void testUpdateStatusBooking_isThrows() {
         LocalDateTime localDateTime = LocalDateTime.now();
         LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(1);
@@ -114,6 +138,23 @@ class BookingServiceImplTest {
         verify(bookingRepository, times(0)).save(bookingNew);
     }
 
+    @Test
+    public void testUpdateStatusBooking_isThrowsFalse() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(1);
+        BookingDto bookingDto = new BookingDto(10, localDateTime, localDateTime1);
+
+        User user = new User(1, "test@email.com", "lasa");
+        Item item = new Item(10, "table", user, "big table", false, null, new HashSet<>());
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user2, Status.APPROVED);
+
+        when(bookingRepository.findById(1)).thenReturn(Optional.of(bookingNew));
+
+        assertThrows(EntityNotFoundException.class, () -> bookingService.updateStatusBooking(1, false, 1));
+        verify(bookingRepository, never()).save(bookingNew);
+        verify(bookingRepository, times(0)).save(bookingNew);
+    }
 
     @Test
     public void testCreateBooking_isSave() {
@@ -189,6 +230,7 @@ class BookingServiceImplTest {
         //второй запрашивает
         List<Booking> returnList = Arrays.asList(bookingNew);
         when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
+        when(bookingRepository.findByBookerIdAndStatus(anyInt(), any(Status.class), any(Sort.class))).thenReturn(List.of(bookingNew));
 
         Collection<Booking> bookings = bookingService.getBookingForState(2, "WAITING", null, null);
         assertNotNull(bookings);
@@ -227,6 +269,7 @@ class BookingServiceImplTest {
         //второй запрашивает
         List<Booking> returnList = Arrays.asList(bookingNew);
         when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
+        when(bookingRepository.findByBookerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
 
         Collection<Booking> bookings = bookingService.getBookingForState(2, "WAITING", 1, 1);
         assertNotNull(bookings);
@@ -254,6 +297,25 @@ class BookingServiceImplTest {
     }
 
     @Test
+    public void testGetBookingForState_isRejectedThrowPage() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(1);
+        BookingDto bookingDto = new BookingDto(10, localDateTime, localDateTime1);
+
+        User user = new User(1, "test@email.com", "lasa");
+        Item item = new Item(10, "table", user, "big table", true, null, new HashSet<>());
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, REJECTED);
+        //второй запрашивает
+        List<Booking> returnList = Arrays.asList(bookingNew);
+        when(userRepositoryJpa.findById(2)).thenThrow(EntityNotFoundException.class);
+
+        assertThrows(EntityNotFoundException.class, () -> bookingService.getBookingForState(2, "REJECTED", 1, 1));
+        verify(bookingRepository, never()).findByBookerId(anyInt(), any(Sort.class));
+        verify(bookingRepository, times(0)).findByBookerId(anyInt(), any(Sort.class));
+    }
+
+    @Test
     public void testGetBookingForState_isThrowValidPage() {
         LocalDateTime localDateTime = LocalDateTime.now();
         LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(1);
@@ -270,6 +332,27 @@ class BookingServiceImplTest {
         assertThrows(IllegalArgumentException.class, () -> bookingService.getBookingForState(2, "WAITING", -2, 1));
         verify(bookingRepository, never()).findByBookerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class));
         verify(bookingRepository, times(0)).findByBookerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class));
+    }
+
+    @Test
+    public void testGetBookingForOwnerAndState_isRejectedNotPage() {
+        LocalDateTime localDateTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(10);
+
+        User user = new User(1, "test@email.com", "lasa");
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Item item = new Item(10, "table", user2, "big table", true, null, new HashSet<>());
+
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, REJECTED);
+        //второй запрашивает
+        List<Booking> returnList = Arrays.asList(bookingNew);
+        when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
+        when(itemRepositoryJpa.findByOwnerId(2)).thenReturn(Arrays.asList(new Item()));
+        when(bookingRepository.findAllByItemOwnerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
+
+        Collection<Booking> bookings = bookingService.getBookingForOwnerAndState(2, "REJECTED", 1, 1);
+        assertNotNull(bookings);
+        assertEquals(returnList, bookings);
     }
 
     @Test
@@ -308,6 +391,22 @@ class BookingServiceImplTest {
         when(itemRepositoryJpa.findByOwnerId(2)).thenReturn(Arrays.asList(new Item()));
 
         assertThrows(ValidationException.class, () -> bookingService.getBookingForOwnerAndState(2, "FUTURE", -3, 10));
+    }
+
+
+    @Test
+    public void testGetBookingForOwnerAndState_isDefaultNotValidPage() {
+        LocalDateTime localDateTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(10);
+
+        User user = new User(1, "test@email.com", "lasa");
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Item item = new Item(10, "table", user2, "big table", true, null, new HashSet<>());
+
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, WAITING);
+        //второй запрашивает
+
+        assertThrows(ValidationException.class, () -> bookingService.getBookingForOwnerAndState(2, "nothing", 1, 10));
     }
 
     @Test
@@ -368,6 +467,28 @@ class BookingServiceImplTest {
         Collection<Booking> bookings = bookingService.getBookingForOwnerAndState(2, "PAST", 1, 1);
         assertNotNull(bookings);
         assertEquals(bookings, bookings);
+    }
+
+    @Test
+    public void testGetBookingForOwnerAndState_isThrowPastWithPage() {
+        LocalDateTime localDateTime = LocalDateTime.now().minusHours((10));
+        LocalDateTime localDateTime1 = LocalDateTime.now().minusHours((3));
+
+        User user = new User(1, "test@email.com", "lasa");
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Item item = new Item(10, "table", user2, "big table", true, null, new HashSet<>());
+
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, WAITING);
+        //второй запрашивает
+        List<Booking> returnList = Arrays.asList(bookingNew);
+        when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
+        when(itemRepositoryJpa.findByOwnerId(2)).thenReturn(Arrays.asList(new Item()));
+
+        assertThrows(ValidationException.class, () -> bookingService.getBookingForOwnerAndState(2, "PAST", -1, 0));
+
+        verify(bookingRepository, never()).findByItemOwnerPaste(anyInt(), any(LocalDateTime.class), any(Pageable.class));
+        verify(bookingRepository, times(0)).findByItemOwnerPaste(anyInt(), any(LocalDateTime.class), any(Pageable.class));
+
     }
 
     @Test

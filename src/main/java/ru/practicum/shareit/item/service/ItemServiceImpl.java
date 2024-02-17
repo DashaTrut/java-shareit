@@ -104,22 +104,6 @@ public class ItemServiceImpl implements ItemService {
         return itemRepositoryJpa.findAll();
     }
 
-    //не знаю какой из двух правильнее оставить, работают оба
-    public List<ItemDto> searchItem1(String textQuery) {
-        if (textQuery == null || textQuery.isBlank()) {
-            List<ItemDto> list = new ArrayList<>();
-            return list;
-        }
-        List<ItemDto> items = new ArrayList<>();
-        for (Item item : getAllItem()) {
-            if ((item.getName().toLowerCase().contains(textQuery)
-                    || item.getDescription().toLowerCase().contains(textQuery.toLowerCase()))
-                    && item.getAvailable()) {
-                items.add(ItemMapper.toItemDto(item));
-            }
-        }
-        return items;
-    }
 
     public List<ItemDto> searchItem(String textQuery) {
         if (textQuery == null || textQuery.isBlank()) {

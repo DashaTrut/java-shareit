@@ -67,6 +67,7 @@ class ItemServiceImplTest {
         assertThrows(EntityNotFoundException.class, () -> itemService.add(itemDto, userId));
     }
 
+
     @Test
     void updateItem_updateSave() {
         int userId = 0;
@@ -88,6 +89,8 @@ class ItemServiceImplTest {
 
         assertNotNull(itemActual);
         assertEquals("item before update", itemActual.getDescription());
+        verify(itemRepository, times(1)).save(new Item());
+
     }
 
     @Test
@@ -103,6 +106,23 @@ class ItemServiceImplTest {
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> itemService.update(itemDto, userId, itemId));
+        verify(itemRepository, never()).save(item);
+        verify(itemRepository, times(0)).save(new Item());
+    }
+
+    @Test
+    void updateItem_updateToThrowUserId() {
+        int userId = 0;
+        ItemDto itemDto = new ItemDto(0, "item", "item before update", true, null);
+        int itemId = 0;
+        User oldUser = new User();
+        oldUser.setId(userId);
+        oldUser.setName("first name");
+        oldUser.setEmail("set@email.com");
+        Item item = new Item(itemId, "item", oldUser, "item for boking", true, null, null);
+
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        assertThrows(EntityNotFoundException.class, () -> itemService.update(itemDto, 3, itemId));
         verify(itemRepository, never()).save(item);
         verify(itemRepository, times(0)).save(new Item());
     }
@@ -168,6 +188,25 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void getForIdWithBooking_getItemDtoBooking_withBookingNull() {
+        int userId = 1;
+        int itemId = 1;
+        User oldUser = new User(2, "first name", "set@email.com");
+        User userOwner = new User(userId, "owner@email.com", "nameUser");
+        Item item = new Item(itemId, "item", userOwner, "item for booking", true, null, null);
+        Booking booking = new Booking(1, LocalDateTime.now().minusHours(10), LocalDateTime.now().minusHours(9), item, oldUser, Status.APPROVED);
+        Booking bookingTwo = new Booking(2, LocalDateTime.now().plusHours(10), LocalDateTime.now().plusHours(19), item, oldUser, Status.APPROVED);
+
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        when(userRepository.findById(2)).thenReturn(Optional.of(oldUser));
+        when(commentRepository.findAllByItemOwnerId(userOwner.getId())).thenReturn((new HashSet<Comment>()));
+        ItemDtoBooking itemActual = itemService.getForIdWithBooking(itemId, 2);
+
+        assertNotNull(itemActual);
+        assertEquals("item for booking", itemActual.getDescription());
+    }
+
+    @Test
     void getForIdWithBooking_getItemDtoNotBooking() {
         int userIdNotOwner = 2;
         int userId = 1;
@@ -182,6 +221,63 @@ class ItemServiceImplTest {
         ItemDtoBooking itemActual = itemService.getForIdWithBooking(itemId, userIdNotOwner);
 
         assertNotNull(itemActual);
+        verify(bookingRepository, never()).findFirstByItemIdAndStartBefore(anyInt(), any(LocalDateTime.class),
+                any(Sort.class));
+        verify(bookingRepository, never()).findFirstByItemIdAndStartAfterAndStatus(anyInt(), any(LocalDateTime.class),
+                any(Status.class), any(Sort.class));
+    }
+
+    @Test
+    void getForIdWithBooking_getItemIsThrow() {
+        int userIdNotOwner = 2;
+        int userId = 1;
+        int itemId = 1;
+        User oldUser = new User(userIdNotOwner, "first name", "set@email.com");
+        User userOwner = new User(userId, "owner@email.com", "nameUser");
+        Item item = new Item(itemId, "item", userOwner, "item for booking", true, null, null);
+
+        when(itemRepository.findById(itemId)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> itemService.getForIdWithBooking(itemId, userIdNotOwner));
+
+        verify(bookingRepository, never()).findFirstByItemIdAndStartBefore(anyInt(), any(LocalDateTime.class),
+                any(Sort.class));
+        verify(bookingRepository, never()).findFirstByItemIdAndStartAfterAndStatus(anyInt(), any(LocalDateTime.class),
+                any(Status.class), any(Sort.class));
+    }
+
+    @Test
+    void getForIdWithBooking_getUserIsThrow() {
+        int userIdNotOwner = 2;
+        int userId = 1;
+        int itemId = 1;
+        User oldUser = new User(userIdNotOwner, "first name", "set@email.com");
+        User userOwner = new User(userId, "owner@email.com", "nameUser");
+        Item item = new Item(itemId, "item", userOwner, "item for booking", true, null, null);
+
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        when(userRepository.findById(userIdNotOwner)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> itemService.getForIdWithBooking(itemId, userIdNotOwner));
+
+        verify(bookingRepository, never()).findFirstByItemIdAndStartBefore(anyInt(), any(LocalDateTime.class),
+                any(Sort.class));
+        verify(bookingRepository, never()).findFirstByItemIdAndStartAfterAndStatus(anyInt(), any(LocalDateTime.class),
+                any(Status.class), any(Sort.class));
+    }
+
+    @Test
+    void getForIdWithBooking_getCommentIsThrow() {
+        int userIdNotOwner = 2;
+        int userId = 1;
+        int itemId = 1;
+        User oldUser = new User(userIdNotOwner, "first name", "set@email.com");
+        User userOwner = new User(userId, "owner@email.com", "nameUser");
+        Item item = new Item(itemId, "item", userOwner, "item for booking", true, null, null);
+
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        when(userRepository.findById(userIdNotOwner)).thenReturn(Optional.of(oldUser));
+        when(commentRepository.findAllByItemOwnerId(userOwner.getId())).thenThrow(EntityNotFoundException.class);
+        assertThrows(EntityNotFoundException.class, () -> itemService.getForIdWithBooking(itemId, userIdNotOwner));
+
         verify(bookingRepository, never()).findFirstByItemIdAndStartBefore(anyInt(), any(LocalDateTime.class),
                 any(Sort.class));
         verify(bookingRepository, never()).findFirstByItemIdAndStartAfterAndStatus(anyInt(), any(LocalDateTime.class),
@@ -287,6 +383,18 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void searchItem_getEmptyList() {
+        String text = " ";
+        Item item = new Item(1, "item", new User(), "item for booking", true, null, null);
+        Item itemTwo = new Item(2, "itemTwo", new User(), "item for booking", true, null, null);
+        List<Item> list = Collections.EMPTY_LIST;
+
+        Collection<ItemDto> itemList = itemService.searchItem(text);
+
+        assertEquals(ItemMapper.mapToItemDto(list), itemList);
+    }
+
+    @Test
     void addComment_getComment() {
         String text = "item cool";
         int bookerId = 2;
@@ -316,6 +424,24 @@ class ItemServiceImplTest {
         int itemId = 1;
         CommentDto commentDto = new CommentDto(text);
         when(itemRepository.findById(itemId)).thenThrow(EntityNotFoundException.class);
+        assertThrows(EntityNotFoundException.class, () -> itemService.addComment(commentDto, itemId, bookerId));
+        verify(commentRepository, never()).save(any(Comment.class));
+    }
+
+    @Test
+    void addComment_getThrowUser() {
+        String text = "item cool";
+        int bookerId = 2;
+        int userId = 1;
+        int itemId = 1;
+        User bookerUser = new User(bookerId, "first name", "set@email.com");
+        User userOwner = new User(userId, "owner@email.com", "nameUser");
+        Item item = new Item(itemId, "item", userOwner, "item for booking", true, null, null);
+        Booking booking = new Booking(1, LocalDateTime.now().minusHours(10), LocalDateTime.now().minusHours(9), item, bookerUser, Status.APPROVED);
+        Comment comment = new Comment(1, text, bookerUser, item, LocalDateTime.now());
+        CommentDto commentDto = new CommentDto(text);
+        when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
+        when(userRepository.findById(bookerId)).thenReturn(Optional.empty());
         assertThrows(EntityNotFoundException.class, () -> itemService.addComment(commentDto, itemId, bookerId));
         verify(commentRepository, never()).save(any(Comment.class));
     }
