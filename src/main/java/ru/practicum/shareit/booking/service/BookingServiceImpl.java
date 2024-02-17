@@ -156,8 +156,12 @@ public class BookingServiceImpl {
         if (from == null && size == null) {
             return getBookingForOwnerAndStateNotPage(idUser, state);
         } else {
-            int page = from / size;
-            return getBookingForOwnerAndStateWithPage(idUser, state, page, size);
+            if (from >= 0 && size > 0) {
+                int page = from / size;
+                return getBookingForOwnerAndStateWithPage(idUser, state, page, size);
+            } else {
+                throw new ValidationException("Неверные параметры пагинации");
+            }
         }
 
     }

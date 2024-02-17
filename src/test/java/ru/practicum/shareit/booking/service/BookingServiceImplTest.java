@@ -4,7 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.exceptions.misusing.PotentialStubbingProblem;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.BookingRepositoryJpa;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -132,7 +134,7 @@ class BookingServiceImplTest {
         assertNotNull(booking);
         assertEquals(item, booking.getItem());
         assertEquals(bookingNew.getItem(), booking.getItem());
-
+        verify(bookingRepository, times(1)).save(any(Booking.class));
     }
 
     @Test
@@ -149,6 +151,27 @@ class BookingServiceImplTest {
         when(itemRepositoryJpa.findById(10)).thenReturn(Optional.of(item));
 
         assertThrows(EntityNotFoundException.class, () -> bookingService.create(bookingDto, 1));
+        verify(bookingRepository, never()).save(bookingNew);
+        verify(bookingRepository, times(0)).save(bookingNew);
+
+    }
+
+    @Test
+    public void testCreateBooking_withValidEndThrown() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        LocalDateTime localDateTime1 = LocalDateTime.now().minusHours(10);
+        BookingDto bookingDto = new BookingDto(10, localDateTime, localDateTime1);
+
+        User user = new User(1, "test@email.com", "lasa");
+        Item item = new Item(10, "table", user, "big table", true, null, new HashSet<>());
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Booking bookingNew = new Booking(0, localDateTime, localDateTime1, item, user, Status.WAITING);
+
+        when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
+        when(itemRepositoryJpa.findById(10)).thenReturn(Optional.of(item));
+        when(bookingRepository.save(bookingNew)).thenReturn(bookingNew);
+
+        assertThrows(PotentialStubbingProblem.class, () -> bookingService.create(bookingDto, 1));
         verify(bookingRepository, never()).save(bookingNew);
         verify(bookingRepository, times(0)).save(bookingNew);
 
@@ -263,6 +286,45 @@ class BookingServiceImplTest {
         when(itemRepositoryJpa.findByOwnerId(2)).thenReturn(Arrays.asList(new Item()));
 
         Collection<Booking> bookings = bookingService.getBookingForOwnerAndState(2, "FUTURE", null, null);
+        assertNotNull(bookings);
+        assertEquals(bookings, bookings);
+    }
+
+    @Test
+    public void testGetBookingForOwnerAndState_isFutureNotValidPage() {
+        LocalDateTime localDateTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(10);
+
+        User user = new User(1, "test@email.com", "lasa");
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Item item = new Item(10, "table", user2, "big table", true, null, new HashSet<>());
+
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, WAITING);
+        //второй запрашивает
+        List<Booking> returnList = Arrays.asList(bookingNew);
+        when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
+        when(itemRepositoryJpa.findByOwnerId(2)).thenReturn(Arrays.asList(new Item()));
+
+        assertThrows(ValidationException.class, () -> bookingService.getBookingForOwnerAndState(2, "FUTURE", -3, 10));
+    }
+
+    @Test
+    public void testGetBookingForOwnerAndState_isFutureWithPage() {
+        LocalDateTime localDateTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(10);
+
+        User user = new User(1, "test@email.com", "lasa");
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Item item = new Item(10, "table", user2, "big table", true, null, new HashSet<>());
+
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, WAITING);
+        //второй запрашивает
+        List<Booking> returnList = Arrays.asList(bookingNew);
+        when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
+        when(itemRepositoryJpa.findByOwnerId(2)).thenReturn(Arrays.asList(new Item()));
+        when(bookingRepository.findByItemOwnerFuture(anyInt(), any(LocalDateTime.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
+
+        Collection<Booking> bookings = bookingService.getBookingForOwnerAndState(2, "FUTURE", 0, 1);
         assertNotNull(bookings);
         assertEquals(bookings, bookings);
     }
