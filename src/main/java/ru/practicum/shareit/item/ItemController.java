@@ -3,7 +3,9 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.service.ItemServiceImpl;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -20,9 +22,9 @@ public class ItemController {
 
     @PostMapping //добавление вещи;
     public ItemDto addItem(@Valid @RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Integer id) {
-        ItemDto item = itemServiceImpl.add(itemDto, id);
+        Item item = itemServiceImpl.add(itemDto, id);
         log.info("Add Item{}", item);
-        return item;
+        return ItemMapper.toItemDto(item);
     }
 
     @PatchMapping("{itemId}")
@@ -33,21 +35,26 @@ public class ItemController {
     }
 
     @GetMapping("{itemId}")
-    public ItemDto getForId(@PathVariable int itemId) {
+    public ItemDtoBooking getForId(@RequestHeader("X-Sharer-User-Id") int id, @PathVariable int itemId) {
         log.info("Get item id{}", itemId);
-        ItemDto item = itemServiceImpl.getForId(itemId);
-        return item;
+        return itemServiceImpl.getForIdWithBooking(itemId, id);
     }
 
     @GetMapping
-    public Collection<ItemDto> getItemsForUser(@RequestHeader("X-Sharer-User-Id") int id) {
+    public Collection<ItemDtoBooking> getItemsForUser(@RequestHeader("X-Sharer-User-Id") int id) {
         log.info("Get items user id{}", id);
-        return itemServiceImpl.getItemsForUser(id);
+        return itemServiceImpl.getItemsForUserWithBooking(id);
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestParam String text) {
         log.info("search {}, text");
         return itemServiceImpl.searchItem(text);
+    }
+
+
+    @PostMapping("{itemId}/comment")
+    public CommentForItem addComment(@RequestBody @Valid CommentDto text, @PathVariable int itemId, @RequestHeader("X-Sharer-User-Id") Integer id) {
+        return itemServiceImpl.addComment(text, itemId, id);
     }
 }
