@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.BookingRepositoryJpa;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
@@ -66,6 +67,8 @@ class BookingServiceImplTest {
         when(bookingRepository.findById(10)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> bookingService.getBooking(10, 1));
+        verify(bookingRepository, times(1)).findById(anyInt());
+
     }
 
     @Test
@@ -105,6 +108,8 @@ class BookingServiceImplTest {
         when(bookingRepository.findById(1)).thenReturn(Optional.of(bookingNew));
 
         assertThrows(BookingException.class, () -> bookingService.updateStatusBooking(1, true, 1));
+        verify(bookingRepository, never()).save(bookingNew);
+        verify(bookingRepository, times(0)).save(bookingNew);
     }
 
 
@@ -144,6 +149,8 @@ class BookingServiceImplTest {
         when(itemRepositoryJpa.findById(10)).thenReturn(Optional.of(item));
 
         assertThrows(EntityNotFoundException.class, () -> bookingService.create(bookingDto, 1));
+        verify(bookingRepository, never()).save(bookingNew);
+        verify(bookingRepository, times(0)).save(bookingNew);
 
     }
 
@@ -179,6 +186,8 @@ class BookingServiceImplTest {
         when(userRepositoryJpa.findById(2)).thenThrow(EntityNotFoundException.class);
 
         assertThrows(EntityNotFoundException.class, () -> bookingService.getBookingForState(2, "WAITING", null, null));
+        verify(bookingRepository, never()).findByBookerId(anyInt(), any(Sort.class));
+        verify(bookingRepository, times(0)).findByBookerId(anyInt(), any(Sort.class));
 
     }
 
@@ -216,6 +225,9 @@ class BookingServiceImplTest {
         when(userRepositoryJpa.findById(2)).thenThrow(EntityNotFoundException.class);
 
         assertThrows(EntityNotFoundException.class, () -> bookingService.getBookingForState(2, "WAITING", 1, 1));
+        verify(bookingRepository, never()).findByBookerId(anyInt(), any(Sort.class));
+        verify(bookingRepository, times(0)).findByBookerId(anyInt(), any(Sort.class));
+
     }
 
     @Test
@@ -270,6 +282,8 @@ class BookingServiceImplTest {
         when(userRepositoryJpa.findById(2)).thenThrow(EntityNotFoundException.class);
 
         assertThrows(EntityNotFoundException.class, () -> bookingService.getBookingForOwnerAndState(2, "FUTURE", null, null));
+        verify(bookingRepository, never()).findByItemOwnerOrderByStartDesc(anyInt(), any(Sort.class));
+        verify(bookingRepository, times(0)).findByItemOwnerOrderByStartDesc(anyInt(), any(Sort.class));
     }
 
     @Test
@@ -306,6 +320,9 @@ class BookingServiceImplTest {
         List<Booking> returnList = Arrays.asList(bookingNew);
 
         assertThrows(ValidationException.class, () -> bookingService.getBookingForState(2, "Test", null, null));
+        verify(bookingRepository, never()).findByBookerId(anyInt(), any(Sort.class));
+        verify(bookingRepository, times(0)).findByBookerId(anyInt(), any(Sort.class));
+
     }
 
 }
