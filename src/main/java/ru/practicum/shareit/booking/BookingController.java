@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoResponse;
@@ -9,9 +10,11 @@ import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.service.BookingServiceImpl;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.util.Collection;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping(path = "/bookings")
 @RequiredArgsConstructor
@@ -41,14 +44,18 @@ public class BookingController {
 
     @GetMapping
     public Collection<BookingDtoResponse> getBookingForState(@RequestHeader("X-Sharer-User-Id") Integer idUser,
-                                                             @RequestParam(defaultValue = "ALL") String state) {
-        return BookingMapper.mapToBookingDtoResponse(bookingServiceIpl.getBookingForState(idUser, state));
+                                                             @RequestParam(defaultValue = "ALL") String state,
+                                                             @RequestParam(required = false) @Positive Integer from,
+                                                             @RequestParam(required = false) @Positive Integer size) {
+        return BookingMapper.mapToBookingDtoResponse(bookingServiceIpl.getBookingForState(idUser, state, from, size));
     }
 
     @GetMapping("/owner")
     public Collection<BookingDtoResponse> getBookingForOwnerAndState(@RequestHeader("X-Sharer-User-Id") Integer idUser,
-                                                                     @RequestParam(defaultValue = "ALL") String state) {
-        return BookingMapper.mapToBookingDtoResponse(bookingServiceIpl.getBookingForOwnerAndState(idUser, state));
+                                                                     @RequestParam(defaultValue = "ALL") String state,
+                                                                     @RequestParam(required = false) @Positive Integer from,
+                                                                     @RequestParam(required = false) @Positive Integer size) {
+        return BookingMapper.mapToBookingDtoResponse(bookingServiceIpl.getBookingForOwnerAndState(idUser, state, from, size));
     }
 
 }

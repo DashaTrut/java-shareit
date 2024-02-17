@@ -33,6 +33,7 @@ public class Item {
     @NotNull
     private Boolean available;
 
+    @JoinColumn(name = "request", nullable = false)
     private Integer request;
 
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)

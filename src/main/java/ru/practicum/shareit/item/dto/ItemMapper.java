@@ -31,7 +31,7 @@ public class ItemMapper {
                 .description(itemDto.getDescription())
                 .owner(user)
                 .available(itemDto.getAvailable())
-                .request(null)
+                .request(itemDto.getRequestId() != null ? itemDto.getRequestId() : null)
                 .build();
     }
 

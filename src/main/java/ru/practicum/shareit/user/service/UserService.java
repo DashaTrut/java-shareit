@@ -12,7 +12,7 @@ public interface UserService {
 
     UserDto update(UserDto userDto, int id);
 
-    List<User> getAll();
+    List<UserDto> getAll();
 
     void delete(int id);
 

@@ -10,6 +10,8 @@ import java.util.List;
 public interface ItemRepositoryJpa extends JpaRepository<Item, Integer> {
     public Collection<Item> findByOwnerId(Integer ownerId);
 
+    public Collection<Item> findAllByRequest(Integer requestId);
+
     @Query(" select i from Item i " +
             "where upper(i.name) like upper(concat('%', ?1, '%')) " +
             " or upper(i.description) like upper(concat('%', ?1, '%'))" +

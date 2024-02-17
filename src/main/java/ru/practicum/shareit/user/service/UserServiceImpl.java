@@ -54,8 +54,8 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toUserDto(oldUser);
     }
 
-    public List<User> getAll() {
-        return userRepositoryJpa.findAll();
+    public List<UserDto> getAll() {
+        return UserMapper.mapToUserDto(userRepositoryJpa.findAll());
     }
 
     @Transactional

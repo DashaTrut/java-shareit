@@ -19,7 +19,7 @@ public class UserController {
 
     @GetMapping
     public Collection<UserDto> getUsers() {  //    получение списка всех пользователей.
-        return UserMapper.mapToUserDto(userServiceImpl.getAll());
+        return userServiceImpl.getAll();
     }
 
     @PostMapping //добавление пользователя;
