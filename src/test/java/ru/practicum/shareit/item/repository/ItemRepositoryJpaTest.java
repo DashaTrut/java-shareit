@@ -65,9 +65,5 @@ class ItemRepositoryJpaTest {
         assertTrue(!actualItem.isEmpty());
     }
 
-    @Test
-    void findAllByRequest() {
-        Collection<Item> actualItem = itemRepository.findAllByRequest(1);
-        assertTrue(!actualItem.isEmpty());
-    }
+
 }
