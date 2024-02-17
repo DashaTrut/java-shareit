@@ -166,6 +166,23 @@ class BookingServiceImplTest {
     }
 
     @Test
+    public void testGetBookingForState_isThrow() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(1);
+
+        User user = new User(1, "test@email.com", "lasa");
+        Item item = new Item(10, "table", user, "big table", true, null, new HashSet<>());
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, WAITING);
+        //второй запрашивает
+        List<Booking> returnList = Arrays.asList(bookingNew);
+        when(userRepositoryJpa.findById(2)).thenThrow(EntityNotFoundException.class);
+
+        assertThrows(EntityNotFoundException.class, () -> bookingService.getBookingForState(2, "WAITING", null, null));
+
+    }
+
+    @Test
     public void testGetBookingForState_isGetWaitingIsPage() {
         LocalDateTime localDateTime = LocalDateTime.now();
         LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(1);
@@ -182,6 +199,40 @@ class BookingServiceImplTest {
         Collection<Booking> bookings = bookingService.getBookingForState(2, "WAITING", 1, 1);
         assertNotNull(bookings);
         assertEquals(bookings, bookings);
+    }
+
+    @Test
+    public void testGetBookingForState_isThrowPage() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(1);
+        BookingDto bookingDto = new BookingDto(10, localDateTime, localDateTime1);
+
+        User user = new User(1, "test@email.com", "lasa");
+        Item item = new Item(10, "table", user, "big table", true, null, new HashSet<>());
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, WAITING);
+        //второй запрашивает
+        List<Booking> returnList = Arrays.asList(bookingNew);
+        when(userRepositoryJpa.findById(2)).thenThrow(EntityNotFoundException.class);
+
+        assertThrows(EntityNotFoundException.class, () ->  bookingService.getBookingForState(2, "WAITING", 1, 1));
+    }
+
+    @Test
+    public void testGetBookingForState_isThrowValidPage() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(1);
+        BookingDto bookingDto = new BookingDto(10, localDateTime, localDateTime1);
+
+        User user = new User(1, "test@email.com", "lasa");
+        Item item = new Item(10, "table", user, "big table", true, null, new HashSet<>());
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, WAITING);
+        //второй запрашивает
+        List<Booking> returnList = Arrays.asList(bookingNew);
+        when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
+
+        assertThrows(IllegalArgumentException.class, () ->  bookingService.getBookingForState(2, "WAITING", -2, 1));
     }
 
     @Test
@@ -204,6 +255,22 @@ class BookingServiceImplTest {
         assertEquals(bookings, bookings);
     }
 
+    @Test
+    public void testGetBookingForOwnerAndState_isThrowFutureNotPage() {
+        LocalDateTime localDateTime = LocalDateTime.now().plusHours(1);
+        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(10);
+
+        User user = new User(1, "test@email.com", "lasa");
+        User user2 = new User(2, "testTestov@email.com", "nosa");
+        Item item = new Item(10, "table", user2, "big table", true, null, new HashSet<>());
+
+        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, WAITING);
+        //второй запрашивает
+        List<Booking> returnList = Arrays.asList(bookingNew);
+        when(userRepositoryJpa.findById(2)).thenThrow(EntityNotFoundException.class);
+
+        assertThrows(EntityNotFoundException.class, () -> bookingService.getBookingForOwnerAndState(2, "FUTURE", null, null));
+    }
     @Test
     public void testGetBookingForOwnerAndState_isPastWithPage() {
         LocalDateTime localDateTime = LocalDateTime.now().minusHours((10));
