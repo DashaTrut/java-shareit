@@ -215,7 +215,7 @@ class BookingServiceImplTest {
         List<Booking> returnList = Arrays.asList(bookingNew);
         when(userRepositoryJpa.findById(2)).thenThrow(EntityNotFoundException.class);
 
-        assertThrows(EntityNotFoundException.class, () ->  bookingService.getBookingForState(2, "WAITING", 1, 1));
+        assertThrows(EntityNotFoundException.class, () -> bookingService.getBookingForState(2, "WAITING", 1, 1));
     }
 
     @Test
@@ -232,7 +232,7 @@ class BookingServiceImplTest {
         List<Booking> returnList = Arrays.asList(bookingNew);
         when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
 
-        assertThrows(IllegalArgumentException.class, () ->  bookingService.getBookingForState(2, "WAITING", -2, 1));
+        assertThrows(IllegalArgumentException.class, () -> bookingService.getBookingForState(2, "WAITING", -2, 1));
     }
 
     @Test
@@ -271,6 +271,7 @@ class BookingServiceImplTest {
 
         assertThrows(EntityNotFoundException.class, () -> bookingService.getBookingForOwnerAndState(2, "FUTURE", null, null));
     }
+
     @Test
     public void testGetBookingForOwnerAndState_isPastWithPage() {
         LocalDateTime localDateTime = LocalDateTime.now().minusHours((10));
