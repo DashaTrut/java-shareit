@@ -8,23 +8,15 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepositoryJpa extends JpaRepository<Booking, Integer> {
-    public Collection<Booking> findByBookerId(Integer bookerId, Sort sort);
 
     public List<Booking> findAllByBookerId(Integer bookerId, Pageable pageable);
 
-    public Collection<Booking> findByBookerIdAndStatus(Integer bookerId, Status status, Sort sort);
 
     public List<Booking> findByBookerIdAndStatus(Integer bookerId, Status status, Pageable pageable);
-
-    @Query("select bo " +
-            "from Booking bo " +
-            "where bo.booker.id = ?1 and bo.start < ?2 and bo.end > ?2 ")
-    Collection<Booking> findByBookerIdCurrent(Integer bookerId, LocalDateTime now, Sort sort);
 
     @Query("select bo " +
             "from Booking bo " +
@@ -34,41 +26,24 @@ public interface BookingRepositoryJpa extends JpaRepository<Booking, Integer> {
     @Query(value = "select bo " +
             "from Booking as bo " +
             "where bo.booker.id = ?1 and  bo.end > ?2 ")
-    Collection<Booking> findByBookerIdFuture(Integer bookerId, LocalDateTime localDateTime, Sort sort);
-
-    @Query(value = "select bo " +
-            "from Booking as bo " +
-            "where bo.booker.id = ?1 and  bo.end > ?2 ")
     List<Booking> findByBookerIdFuture(Integer bookerId, LocalDateTime localDateTime, Pageable pageable);
 
-    public Collection<Booking> findByBookerIdAndEndBefore(Integer bookerId, LocalDateTime now, Sort sort);
 
     public List<Booking> findByBookerIdAndEndBefore(Integer bookerId, LocalDateTime now, Pageable pageable);
 
-    @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 ")
-    Collection<Booking> findByItemOwnerOrderByStartDesc(Integer idUser, Sort sort);
 
     @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 ")
     List<Booking> findByItemOwnerOrderByStartDesc(Integer idUser, Pageable pageable);
 
-    public Collection<Booking> findAllByItemOwnerIdAndStatus(Integer bookerId, Status status, Sort sort);
-
     public List<Booking> findAllByItemOwnerIdAndStatus(Integer bookerId, Status status, Pageable pageable);
 
-    @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.end > ?2")
-    Collection<Booking> findByItemOwnerFuture(Integer bookerId, LocalDateTime localDateTime, Sort sort);
 
     @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.end > ?2")
     List<Booking> findByItemOwnerFuture(Integer bookerId, LocalDateTime localDateTime, Pageable pageable);
 
-    @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.end < ?2")
-    Collection<Booking> findByItemOwnerPaste(Integer bookerId, LocalDateTime localDateTime, Sort sort);
 
     @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.end < ?2")
     List<Booking> findByItemOwnerPaste(Integer bookerId, LocalDateTime localDateTime, Pageable pageable);
-
-    @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.start < ?2 AND b.end > ?2")
-    Collection<Booking> findByItemOwnerCurrent(Integer bookerId, LocalDateTime localDateTime, Sort sort);
 
     @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.start < ?2 AND b.end > ?2")
     List<Booking> findByItemOwnerCurrent(Integer bookerId, LocalDateTime localDateTime, Pageable pageable);

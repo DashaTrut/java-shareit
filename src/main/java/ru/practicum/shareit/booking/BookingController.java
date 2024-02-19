@@ -44,17 +44,17 @@ public class BookingController {
 
     @GetMapping
     public Collection<BookingDtoResponse> getBookingForState(@RequestHeader("X-Sharer-User-Id") Integer idUser,
-                                                             @RequestParam(defaultValue = "ALL") String state,
-                                                             @RequestParam(required = false) @Positive Integer from,
-                                                             @RequestParam(required = false) @Positive Integer size) {
+                                                             @RequestParam(defaultValue = "ALL", required = false) String state,
+                                                             @RequestParam(defaultValue = "1", required = false) @Positive Integer from,
+                                                             @RequestParam(defaultValue = "10", required = false) @Positive Integer size) {
         return BookingMapper.mapToBookingDtoResponse(bookingServiceIpl.getBookingForState(idUser, state, from, size));
     }
 
     @GetMapping("/owner")
     public Collection<BookingDtoResponse> getBookingForOwnerAndState(@RequestHeader("X-Sharer-User-Id") Integer idUser,
-                                                                     @RequestParam(defaultValue = "ALL") String state,
-                                                                     @RequestParam(required = false) @Positive Integer from,
-                                                                     @RequestParam(required = false) @Positive Integer size) {
+                                                                     @RequestParam(defaultValue = "ALL", required = false) String state,
+                                                                     @RequestParam(defaultValue = "1", required = false) @Positive Integer from,
+                                                                     @RequestParam(defaultValue = "10", required = false) @Positive Integer size) {
         return BookingMapper.mapToBookingDtoResponse(bookingServiceIpl.getBookingForOwnerAndState(idUser, state, from, size));
     }
 

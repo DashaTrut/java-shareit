@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestHeader;
 import ru.practicum.shareit.exception.EntityNotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -13,7 +13,6 @@ import ru.practicum.shareit.item.repository.ItemRepositoryJpa;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.RequestDtoWithFeedbackItem;
 import ru.practicum.shareit.request.dto.RequestMapper;
-import ru.practicum.shareit.request.dto.RequestResponseDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.RequestRepositoryJpa;
 import ru.practicum.shareit.user.User;
@@ -35,6 +34,16 @@ public class RequestService {
         return requestRepositoryJpa.save(RequestMapper.toItemRequest(itemRequestDto, user));
     }
 
+
+    public RequestDtoWithFeedbackItem getRequest(int requestId, int idUser) {
+        User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
+                new EntityNotFoundException("Пользователя не существует"));
+        ItemRequest itemRequest = requestRepositoryJpa.findById(requestId).orElseThrow(() ->
+                new EntityNotFoundException("Пользователя не существует"));
+        Collection<Item> items = itemRepositoryJpa.findAllByRequest(itemRequest.getId());
+        return RequestMapper.toRequestDtoWithFeedbackItem(itemRequest, ItemMapper.mapToItemDto(items));
+    }
+
     public Set<RequestDtoWithFeedbackItem> getRequestUserAll(int idUser) {
         User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
                 new EntityNotFoundException("Пользователя не существует"));
@@ -49,37 +58,21 @@ public class RequestService {
         return result;
     }
 
-    public RequestDtoWithFeedbackItem getRequest(int requestId, int idUser) {
-        User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
-                new EntityNotFoundException("Пользователя не существует"));
-        ItemRequest itemRequest = requestRepositoryJpa.findById(requestId).orElseThrow(() ->
-                new EntityNotFoundException("Пользователя не существует"));
-        Collection<Item> items = itemRepositoryJpa.findAllByRequest(itemRequest.getId());
-        return RequestMapper.toRequestDtoWithFeedbackItem(itemRequest, ItemMapper.mapToItemDto(items));
-    }
-
-
-    public List<RequestDtoWithFeedbackItem> getRequestAllPage(int idUser, Integer page, Integer size) {
+    public List<RequestDtoWithFeedbackItem> getRequestAllPage(int idUser, Integer from, Integer size) {
+        if (from < 0) {
+            throw new ValidationException("отрицательный параметр from");
+        }
         User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
                 new EntityNotFoundException("Пользователя не существует"));
         List<RequestDtoWithFeedbackItem> result = new ArrayList<>();
-        List<ItemRequest> list;
-        if (page == null && size == null) {
-            list = requestRepositoryJpa.findAllByRequesterIdNot(idUser);
-        } else {
-            list = requestRepositoryJpa.findAllByRequesterIdNot(
-                    idUser, PageRequest.of(page, size, Sort.Direction.DESC, "created"));
-        }
+        int page = from / size;
+        List<ItemRequest> list = requestRepositoryJpa.findAllByRequesterIdNot(
+                idUser, PageRequest.of(page, size, Sort.Direction.DESC, "created"));
         for (ItemRequest itemRequest : list) {
             List<ItemDto> items = ItemMapper.mapToItemDto(itemRepositoryJpa.findAllByRequest(itemRequest.getId()));
             result.add(RequestMapper.toRequestDtoWithFeedbackItem(itemRequest, items));
         }
         return result;
-    }
-
-    public List<RequestResponseDto> getRequestAll(@RequestHeader("X-Sharer-User-Id") Integer idUser) {
-        return RequestMapper.toListRequestResponseDto(
-                requestRepositoryJpa.findAll());
     }
 }
 

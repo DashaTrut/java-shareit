@@ -92,15 +92,11 @@ public class BookingServiceImpl {
 
     @Transactional(readOnly = true)
     public Collection<Booking> getBookingForState(int idUser, String string, Integer from, Integer size) {
-        State state = chekState(string);
+        State state = checkState(string);
         User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
                 new EntityNotFoundException("Пользователя не существует"));
-        if (from == null && size == null) {
-            return getBookingForStateNotPage(idUser, state);
-        } else {
-            int page = from / size;
-            return getBookingForStateWithPage(idUser, state, page, size);
-        }
+        int page = from / size;
+        return getBookingForStateWithPage(idUser, state, page, size);
     }
 
     public Collection<Booking> getBookingForStateWithPage(int brookerId, State state, int page, int size) {
@@ -121,68 +117,24 @@ public class BookingServiceImpl {
             case PAST:
                 return bookingRepositoryJpa.findByBookerIdAndEndBefore(brookerId, LocalDateTime.now(), pageable);
             default:
-                throw new BookingException("У пользователя нет бронирований");
-        }
-    }
-
-    public Collection<Booking> getBookingForStateNotPage(int idUser, State state) {
-        switch (state) {
-            case ALL:
-                return bookingRepositoryJpa.findByBookerId(idUser, start);
-            case WAITING:
-                return bookingRepositoryJpa.findByBookerIdAndStatus(idUser, WAITING, start);
-            case REJECTED:
-                return bookingRepositoryJpa.findByBookerIdAndStatus(idUser, REJECTED, start);
-            case CURRENT:
-                return bookingRepositoryJpa.findByBookerIdCurrent(idUser, LocalDateTime.now(), start);
-            case FUTURE:
-                return bookingRepositoryJpa.findByBookerIdFuture(idUser, LocalDateTime.now(), start);
-            case PAST:
-                return bookingRepositoryJpa.findByBookerIdAndEndBefore(idUser, LocalDateTime.now(), start);
-            default:
-                throw new BookingException("У пользователя нет бронирований");
+                return null;
         }
     }
 
     @Transactional(readOnly = true)
     public Collection<Booking> getBookingForOwnerAndState(int idUser, String string, Integer from, Integer size) {
-        State state = chekState(string);
+        State state = checkState(string);
         User user = userRepositoryJpa.findById(idUser).orElseThrow(() ->
                 new EntityNotFoundException("Пользователя не существует"));
         Collection<Item> listItem = itemRepositoryJpa.findByOwnerId(idUser);
         if (listItem.isEmpty()) {
             throw new BookingException("У пользователя нет вещей");
         }
-        if (from == null && size == null) {
-            return getBookingForOwnerAndStateNotPage(idUser, state);
+        if (from >= 0 && size > 0) {
+            int page = from / size;
+            return getBookingForOwnerAndStateWithPage(idUser, state, page, size);
         } else {
-            if (from >= 0 && size > 0) {
-                int page = from / size;
-                return getBookingForOwnerAndStateWithPage(idUser, state, page, size);
-            } else {
-                throw new ValidationException("Неверные параметры пагинации");
-            }
-        }
-
-    }
-
-
-    public Collection<Booking> getBookingForOwnerAndStateNotPage(int idUser, State state) {
-        switch (state) {
-            case ALL:
-                return bookingRepositoryJpa.findByItemOwnerOrderByStartDesc(idUser, start);
-            case WAITING:
-                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, WAITING, start);
-            case REJECTED:
-                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, REJECTED, start);
-            case CURRENT:
-                return bookingRepositoryJpa.findByItemOwnerCurrent(idUser, LocalDateTime.now(), start);
-            case FUTURE:
-                return bookingRepositoryJpa.findByItemOwnerFuture(idUser, LocalDateTime.now(), start);
-            case PAST:
-                return bookingRepositoryJpa.findByItemOwnerPaste(idUser, LocalDateTime.now(), start);
-            default:
-                throw new BookingException("У пользователя нет вещей");
+            throw new ValidationException("Неверные параметры пагинации");
         }
     }
 
@@ -202,11 +154,11 @@ public class BookingServiceImpl {
             case PAST:
                 return bookingRepositoryJpa.findByItemOwnerPaste(idUser, LocalDateTime.now(), pageable);
             default:
-                throw new BookingException("У пользователя нет вещей");
+                return null;
         }
     }
 
-    private State chekState(String stringState) {
+    public State checkState(String stringState) {
         try {
             return State.valueOf(stringState);
         } catch (IllegalArgumentException e) {

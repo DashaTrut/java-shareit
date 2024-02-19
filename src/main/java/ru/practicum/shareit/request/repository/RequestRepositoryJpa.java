@@ -12,6 +12,4 @@ public interface RequestRepositoryJpa extends JpaRepository<ItemRequest, Integer
 
     public List<ItemRequest> findAllByRequesterIdNot(Integer requesterId, Pageable pageable);
 
-    public List<ItemRequest> findAllByRequesterIdNot(Integer requesterId);
-
 }

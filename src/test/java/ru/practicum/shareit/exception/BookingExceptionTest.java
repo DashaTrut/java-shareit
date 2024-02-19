@@ -1,11 +1,10 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.exception;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ShareItTests {
-
+class BookingExceptionTest {
     @Test
     void contextLoads() {
     }

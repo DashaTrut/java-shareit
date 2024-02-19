@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -98,7 +97,7 @@ class ItemRequestControllerTest {
     void getRequestUserAll() {
         int userId = 1;
 
-        when(requestService.getRequestUserAll(anyInt())).thenReturn(Set.of(requestDtoWithFeedbackItem));
+        when(requestService.getRequestAllPage(anyInt(), anyInt(), anyInt())).thenReturn(List.of(requestDtoWithFeedbackItem));
         mockMvc.perform(get("/requests")
                         //.content(mapper.writeValueAsString(itemRequestDto))
                         .characterEncoding(StandardCharsets.UTF_8)

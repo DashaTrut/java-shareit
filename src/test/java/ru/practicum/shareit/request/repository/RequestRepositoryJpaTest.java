@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepositoryJpa;
@@ -34,6 +35,7 @@ class RequestRepositoryJpaTest {
     private User user1;
     private User user2;
     private ItemRequest itemRequest1;
+    private Pageable pageable;
 
     @BeforeEach
     private void addItem() {
@@ -70,6 +72,9 @@ class RequestRepositoryJpaTest {
                 .description("test item")
                 .tags(Collections.EMPTY_SET)
                 .build());
+
+        pageable = PageRequest.of(0, 10, Sort.Direction.DESC, "created");
+
     }
 
     @Test
@@ -78,14 +83,6 @@ class RequestRepositoryJpaTest {
         assertTrue(!actualItemRequest.isEmpty());
         assertEquals(actualItemRequest.size(), 1);
         assertEquals(actualItemRequest, List.of(itemRequest1));
-    }
-
-    @Test
-    void findAllByRequestorIdNot() {
-        List<ItemRequest> actualItemRequest = requestRepository.findAllByRequesterIdNot(user1.getId());
-        assertTrue(!actualItemRequest.isEmpty());
-        assertEquals(actualItemRequest.size(), 1);
-        assertEquals(actualItemRequest, List.of(itemRequest));
     }
 
     @Test

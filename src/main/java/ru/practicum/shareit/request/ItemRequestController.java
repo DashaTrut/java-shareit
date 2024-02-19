@@ -2,6 +2,7 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.RequestDtoWithFeedbackItem;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
@@ -40,7 +42,7 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public List<RequestDtoWithFeedbackItem> getRequestAllPage(@RequestHeader("X-Sharer-User-Id") int idUser,
-                                                              @RequestParam(required = false) @Positive Integer from, @RequestParam(required = false) @NotNull @Positive Integer size) {
+                                                              @RequestParam(defaultValue = "0",required = false) Integer from, @RequestParam(defaultValue = "10", required = false) Integer size) {
         return requestService.getRequestAllPage(idUser, from, size);
     }
 
