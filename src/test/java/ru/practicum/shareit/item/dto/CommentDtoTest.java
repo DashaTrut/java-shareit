@@ -19,7 +19,7 @@ class CommentDtoTest {
 
     @SneakyThrows
     @Test
-    void testItemDto() {
+    void testCommentDto() {
         String text = "hello item";
 
         CommentDto commentDto = new CommentDto(text);

@@ -9,4 +9,8 @@ class ShareItAppTest {
     @Test
     void contextLoads() {
     }
+
+    @Test
+    void main() {
+    }
 }
