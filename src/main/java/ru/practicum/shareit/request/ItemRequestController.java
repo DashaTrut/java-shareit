@@ -11,8 +11,6 @@ import ru.practicum.shareit.request.dto.RequestResponseDto;
 import ru.practicum.shareit.request.service.RequestService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import java.util.List;
 import java.util.Set;
 
