@@ -2,6 +2,8 @@ package ru.practicum.shareit.item.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
+import org.springframework.validation.annotation.Validated;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
@@ -17,6 +19,7 @@ import java.util.Set;
 @Setter
 @Builder
 @Entity
+@Validated
 @ToString
 @Table(name = "items", schema = "public")
 public class Item {
@@ -33,7 +36,9 @@ public class Item {
     @NotNull
     private Boolean available;
 
-    private Integer request;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "request")
+    private ItemRequest request;
 
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     @JsonBackReference
@@ -52,6 +57,4 @@ public class Item {
     public int hashCode() {
         return getClass().hashCode();
     }
-
-
 }

@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepositoryJpa;
 import ru.practicum.shareit.item.repository.ItemRepositoryJpa;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.RequestRepositoryJpa;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.repository.UserRepositoryJpa;
 
@@ -28,13 +32,25 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepositoryJpa userRepositoryJpa;
     private final BookingRepositoryJpa bookingRepositoryJpa;
     private final CommentRepositoryJpa commentRepositoryJpa;
+    private final RequestRepositoryJpa requestRepositoryJpa;
+    private Sort start = Sort.by(Sort.Direction.ASC, "id");
+
 
     //добавление вещи;
     @Transactional(readOnly = true)
     public Item add(ItemDto itemDto, int id) {
         User user = userRepositoryJpa.findById(id).orElseThrow(() ->
                 new EntityNotFoundException("Пользователя не существует"));
-        Item itemCreate = itemRepositoryJpa.save(ItemMapper.toItem(itemDto, user));
+        Item item;
+        if (itemDto.getRequestId() != null) {
+
+            ItemRequest itemRequest = requestRepositoryJpa.findById(itemDto.getRequestId()).orElseThrow(() ->
+                    new EntityNotFoundException("Пользователя не существует"));
+            item = ItemMapper.toItem(itemDto, user, itemRequest);
+        } else {
+            item = ItemMapper.toItem(itemDto, user, null);
+        }
+        Item itemCreate = itemRepositoryJpa.save(item);
         return itemCreate;
     }
 
@@ -85,10 +101,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Transactional
-    public Collection<ItemDtoBooking> getItemsForUserWithBooking(Integer id) {
+    public Collection<ItemDtoBooking> getItemsForUserWithBooking(Integer id, int from, int size) {
         User user = userRepositoryJpa.findById(id).orElseThrow(() ->
                 new EntityNotFoundException("Пользователя не существует"));
-        Collection<Item> list = itemRepositoryJpa.findByOwnerId(id);
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, start);
+        Collection<Item> list = itemRepositoryJpa.findByOwnerId(id, pageable);
         List<ItemDtoBooking> listNew = new ArrayList<>();
         for (Item item : list) {
             Booking bookingLast = bookingRepositoryJpa.findFirstByItemIdAndEndBefore(item.getId(), LocalDateTime.now(), Sort.by(Sort.Direction.DESC, "start"));
@@ -104,28 +122,14 @@ public class ItemServiceImpl implements ItemService {
         return itemRepositoryJpa.findAll();
     }
 
-    //не знаю какой из двух правильнее оставить, работают оба
-    public List<ItemDto> searchItem1(String textQuery) {
-        if (textQuery == null || textQuery.isBlank()) {
-            List<ItemDto> list = new ArrayList<>();
-            return list;
-        }
-        List<ItemDto> items = new ArrayList<>();
-        for (Item item : getAllItem()) {
-            if ((item.getName().toLowerCase().contains(textQuery)
-                    || item.getDescription().toLowerCase().contains(textQuery.toLowerCase()))
-                    && item.getAvailable()) {
-                items.add(ItemMapper.toItemDto(item));
-            }
-        }
-        return items;
-    }
 
-    public List<ItemDto> searchItem(String textQuery) {
+    public List<ItemDto> searchItem(String textQuery, int from, int size) {
         if (textQuery == null || textQuery.isBlank()) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
-        return ItemMapper.mapToItemDto(itemRepositoryJpa.search(textQuery));
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, start);
+        return ItemMapper.mapToItemDto(itemRepositoryJpa.search(textQuery, pageable));
     }
 
     @Transactional(readOnly = true)
@@ -136,9 +140,7 @@ public class ItemServiceImpl implements ItemService {
                 new EntityNotFoundException("Пользователя не существует"));
         Booking booking = bookingRepositoryJpa.findFirstByBookerIdAndItemIdAndEndBefore(id, itemId, LocalDateTime.now()).orElseThrow(() ->
                 new BookingException("Отзыв можно оставить только после бронирования"));
-
         Comment comment = commentRepositoryJpa.save(CommentMapper.toComment(text, user, item));
         return CommentMapper.toCommentForItem(comment);
     }
-
 }
