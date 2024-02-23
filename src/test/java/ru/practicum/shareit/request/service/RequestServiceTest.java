@@ -89,13 +89,13 @@ class RequestServiceTest {
         User userToSave = new User(userId, "first name", "set@email.com");
         ItemRequest itemRequest = new ItemRequest(requestId, "want item", userToSave, time);
         ItemDto itemDto = new ItemDto(1, "item name", "item description", true, requestId);
-        Item item = new Item(1, "item name", userToSave, "item description", true, requestId, Collections.EMPTY_SET);
+        Item item = new Item(1, "item name", userToSave, "item description", true, itemRequest, Collections.EMPTY_SET);
 
         RequestDtoWithFeedbackItem requestDtoWithFeedbackItem = new RequestDtoWithFeedbackItem(1, "want item", time, List.of(itemDto));
 
         when(userRepositoryJpa.findById(userId)).thenReturn(Optional.of(userToSave));
         when(requestRepositoryJpa.findById(requestId)).thenReturn(Optional.of(itemRequest));
-        when(itemRepositoryJpa.findAllByRequest(requestId)).thenReturn(List.of(item));
+        when(itemRepositoryJpa.findAllByRequestId(requestId)).thenReturn(List.of(item));
         RequestDtoWithFeedbackItem actualItemRequest = requestService.getRequest(requestId, userId);
 
         assertEquals(requestDtoWithFeedbackItem, actualItemRequest);
@@ -131,28 +131,8 @@ class RequestServiceTest {
 
         when(userRepositoryJpa.findById(userId)).thenReturn(Optional.of(userToSave));
         when(requestRepositoryJpa.findById(requestId)).thenReturn(Optional.of(itemRequest));
-        when(itemRepositoryJpa.findAllByRequest(requestId)).thenThrow(EntityNotFoundException.class);
+        when(itemRepositoryJpa.findAllByRequestId(requestId)).thenThrow(EntityNotFoundException.class);
         assertThrows(EntityNotFoundException.class, () -> requestService.getRequest(requestId, userId));
-    }
-
-    @Test
-    void getRequestUserAll_whenSetRequestDtoWithFeedbackItem() {
-        int userId = 1;
-        int requestId = 1;
-        LocalDateTime time = LocalDateTime.now().minusHours(1);
-        User userToSave = new User(userId, "first name", "set@email.com");
-        ItemDto itemDto = new ItemDto(1, "item name", "item description", true, requestId);
-        Item item = new Item(1, "item name", userToSave, "item description", true, requestId, Collections.EMPTY_SET);
-        ItemRequest itemRequest = new ItemRequest(requestId, "want item", userToSave, time);
-        RequestDtoWithFeedbackItem requestDtoWithFeedbackItem = new RequestDtoWithFeedbackItem(1, "want item", time, List.of(itemDto));
-
-        when(userRepositoryJpa.findById(userId)).thenReturn(Optional.of(userToSave));
-        when(requestRepositoryJpa.findAllByRequesterId(userId)).thenReturn(Set.of(itemRequest));
-        when(itemRepositoryJpa.findAllByRequest(requestId)).thenReturn(List.of(item));
-        Set<RequestDtoWithFeedbackItem> actualItemRequest = requestService.getRequestUserAll(userId);
-
-        assertNotNull(actualItemRequest);
-        assertEquals(Set.of(requestDtoWithFeedbackItem), actualItemRequest);
     }
 
     @Test
@@ -162,7 +142,7 @@ class RequestServiceTest {
         when(userRepositoryJpa.findById(userId)).thenThrow(EntityNotFoundException.class);
         assertThrows(EntityNotFoundException.class, () -> requestService.getRequestUserAll(userId));
 
-        verify(itemRepositoryJpa, never()).findAllByRequest(anyInt());
+        verify(itemRepositoryJpa, never()).findAllByRequestId(anyInt());
     }
 
     @Test
@@ -171,15 +151,15 @@ class RequestServiceTest {
         int requestId = 1;
         LocalDateTime time = LocalDateTime.now().minusHours(1);
         User userToSave = new User(userId, "first name", "set@email.com");
-        ItemDto itemDto = new ItemDto(1, "item name", "item description", true, requestId);
-        Item item = new Item(1, "item name", userToSave, "item description", true, requestId, Collections.EMPTY_SET);
-        Item item2 = new Item(2, "item name two", userToSave, "item description", true, requestId, Collections.EMPTY_SET);
         ItemRequest itemRequest = new ItemRequest(requestId, "want item", userToSave, time);
-        RequestDtoWithFeedbackItem requestDtoWithFeedbackItem = new RequestDtoWithFeedbackItem(1, "want item", time, List.of(itemDto, ItemMapper.toItemDto(item2)));
+        Item item = new Item(1, "item name", userToSave, "item description", true, itemRequest, Collections.EMPTY_SET);
+        Item item2 = new Item(2, "item name two", userToSave, "item description", true, itemRequest, Collections.EMPTY_SET);
+        RequestDtoWithFeedbackItem requestDtoWithFeedbackItem = new RequestDtoWithFeedbackItem(1, "want item", time, ItemMapper.mapToItemDto(List.of(item, item2)));
 
         when(userRepositoryJpa.findById(userId)).thenReturn(Optional.of(userToSave));
-        when(requestRepositoryJpa.findAllByRequesterIdNot(userId, pageable)).thenReturn(List.of(itemRequest));
-        when(itemRepositoryJpa.findAllByRequest(requestId)).thenReturn(List.of(item, item2));
+        when(requestRepositoryJpa.findAllByRequesterIdNot(
+                anyInt(), any(Pageable.class))).thenReturn(List.of(itemRequest));
+        when(itemRepositoryJpa.findByRequestIdIn(any())).thenReturn(List.of(item, item2));
         List<RequestDtoWithFeedbackItem> actualItemRequest = requestService.getRequestAllPage(userId, 0, 10);
 
         assertNotNull(actualItemRequest);
@@ -187,26 +167,6 @@ class RequestServiceTest {
 
     }
 
-    @Test
-    void getRequestAllPage_whenListRequestDtoWithFeedbackItemWithPage() {
-        int userId = 1;
-        int requestId = 1;
-        LocalDateTime time = LocalDateTime.now().minusHours(1);
-        User userToSave = new User(userId, "first name", "set@email.com");
-        ItemDto itemDto = new ItemDto(1, "item name", "item description", true, requestId);
-        Item item = new Item(1, "item name", userToSave, "item description", true, requestId, Collections.EMPTY_SET);
-        Item item2 = new Item(2, "item name two", userToSave, "item description", true, requestId, Collections.EMPTY_SET);
-        ItemRequest itemRequest = new ItemRequest(requestId, "want item", userToSave, time);
-        RequestDtoWithFeedbackItem requestDtoWithFeedbackItem = new RequestDtoWithFeedbackItem(1, "want item", time, List.of(itemDto, ItemMapper.toItemDto(item2)));
-
-        when(userRepositoryJpa.findById(userId)).thenReturn(Optional.of(userToSave));
-        when(requestRepositoryJpa.findAllByRequesterIdNot(anyInt(), any(PageRequest.class))).thenReturn(List.of(itemRequest));
-        when(itemRepositoryJpa.findAllByRequest(requestId)).thenReturn(List.of(item, item2));
-        List<RequestDtoWithFeedbackItem> actualItemRequest = requestService.getRequestAllPage(userId, 1, 1);
-
-        assertNotNull(actualItemRequest);
-        assertEquals(List.of(requestDtoWithFeedbackItem), actualItemRequest);
-    }
 
     @Test
     void getRequestAllPage_whenThrow() {
@@ -247,13 +207,13 @@ class RequestServiceTest {
         LocalDateTime time = LocalDateTime.now().minusHours(1);
         User userToSave = new User(userId, "first name", "set@email.com");
         ItemDto itemDto = new ItemDto(1, "item name", "item description", true, requestId);
-        Item item2 = new Item(2, "item name two", userToSave, "item description", true, requestId, Collections.EMPTY_SET);
         ItemRequest itemRequest = new ItemRequest(requestId, "want item", userToSave, time);
+        Item item2 = new Item(2, "item name two", userToSave, "item description", true, itemRequest, Collections.EMPTY_SET);
         RequestDtoWithFeedbackItem requestDtoWithFeedbackItem = new RequestDtoWithFeedbackItem(1, "want item", time, List.of(itemDto, ItemMapper.toItemDto(item2)));
 
         when(userRepositoryJpa.findById(userId)).thenReturn(Optional.of(userToSave));
         when(requestRepositoryJpa.findAllByRequesterIdNot(anyInt(), any(PageRequest.class))).thenReturn(List.of(itemRequest));
-        when(itemRepositoryJpa.findAllByRequest(requestId)).thenThrow(SQLGrammarException.class);
+        when(itemRepositoryJpa.findByRequestIdIn(any())).thenThrow(SQLGrammarException.class);
         assertThrows(SQLGrammarException.class, () -> requestService.getRequestAllPage(userId, 1, 2));
     }
 }

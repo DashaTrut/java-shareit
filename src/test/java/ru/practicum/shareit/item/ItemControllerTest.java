@@ -93,7 +93,7 @@ class ItemControllerTest {
         int userId = 1;
         ItemDtoBooking itemDtoBooking = new ItemDtoBooking(itemId, "item for test", "check true", true, null, null, null, Collections.EMPTY_SET);
 
-        when(itemService.getItemsForUserWithBooking(anyInt())).thenReturn(List.of(itemDtoBooking));
+        when(itemService.getItemsForUserWithBooking(anyInt(), anyInt(), anyInt())).thenReturn(List.of(itemDtoBooking));
         mockMvc.perform(get("/items/{itemId}", itemId)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -110,7 +110,7 @@ class ItemControllerTest {
         String text = "check";
         ItemDto itemDto = new ItemDto(itemId, "item for test", "check true", true, null);
 
-        when(itemService.searchItem(anyString())).thenReturn(List.of(itemDto));
+        when(itemService.searchItem(anyString(), anyInt(), anyInt())).thenReturn(List.of(itemDto));
         mockMvc.perform(get("/items/search")
                         .param("text", text)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -138,6 +138,4 @@ class ItemControllerTest {
                         .header(HEADER_USER, userId))
                 .andExpect(status().isOk());
     }
-
-
 }

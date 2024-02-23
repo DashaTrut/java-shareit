@@ -31,7 +31,7 @@ public class RequestMapper {
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())
                 .created(itemRequest.getCreated())
-                .items(list)
+                .items(list != null ? list : Collections.emptyList())
                 .build();
     }
 

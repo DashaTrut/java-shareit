@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.request.repository.RequestRepositoryJpa;
@@ -47,15 +50,17 @@ class ItemRepositoryJpaTest {
                 .owner(user)
                 .available(true)
                 .description("test item")
-                .request(itemRequest.getId())
-                .tags(Collections.EMPTY_SET)
+                .request(itemRequest)
+                .tags(Collections.emptySet())
                 .build());
     }
 
     @Test
     void search() {
         String text = "test";
-        List<Item> actualItem = itemRepository.search(text);
+        Sort start = Sort.by(Sort.Direction.DESC, "id");
+        Pageable pageable = PageRequest.of(0, 10, start);
+        List<Item> actualItem = itemRepository.search(text, pageable);
         assertTrue(!actualItem.isEmpty());
     }
 

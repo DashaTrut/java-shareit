@@ -23,6 +23,7 @@ import ru.practicum.shareit.user.repository.UserRepositoryJpa;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static ru.practicum.shareit.booking.model.Status.REJECTED;
@@ -100,7 +101,6 @@ public class BookingServiceImpl {
     }
 
     public Collection<Booking> getBookingForStateWithPage(int brookerId, State state, int page, int size) {
-
         Pageable pageable = PageRequest.of(page, size, start);
         switch (state) {
             case ALL:
@@ -117,7 +117,7 @@ public class BookingServiceImpl {
             case PAST:
                 return bookingRepositoryJpa.findByBookerIdAndEndBefore(brookerId, LocalDateTime.now(), pageable);
             default:
-                return null;
+                return Collections.emptyList();
         }
     }
 
@@ -130,12 +130,7 @@ public class BookingServiceImpl {
         if (listItem.isEmpty()) {
             throw new BookingException("У пользователя нет вещей");
         }
-        if (from >= 0 && size > 0) {
-            int page = from / size;
-            return getBookingForOwnerAndStateWithPage(idUser, state, page, size);
-        } else {
-            throw new ValidationException("Неверные параметры пагинации");
-        }
+        return getBookingForOwnerAndStateWithPage(idUser, state, from / size, size);
     }
 
     public Collection<Booking> getBookingForOwnerAndStateWithPage(int idUser, State state, int page, int size) {
@@ -154,7 +149,7 @@ public class BookingServiceImpl {
             case PAST:
                 return bookingRepositoryJpa.findByItemOwnerPaste(idUser, LocalDateTime.now(), pageable);
             default:
-                return null;
+                return Collections.emptyList();
         }
     }
 

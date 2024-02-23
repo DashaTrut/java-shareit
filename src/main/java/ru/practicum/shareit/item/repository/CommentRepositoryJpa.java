@@ -7,5 +7,5 @@ import java.util.Collection;
 
 public interface CommentRepositoryJpa extends JpaRepository<Comment, Integer> {
 
-    public Collection<Comment> findAllByItemOwnerId(Integer ownerId);
+    Collection<Comment> findAllByItemOwnerId(Integer ownerId);
 }

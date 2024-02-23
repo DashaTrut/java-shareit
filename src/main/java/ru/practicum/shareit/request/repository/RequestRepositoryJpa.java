@@ -8,8 +8,8 @@ import java.util.Collection;
 import java.util.List;
 
 public interface RequestRepositoryJpa extends JpaRepository<ItemRequest, Integer> {
-    public Collection<ItemRequest> findAllByRequesterId(Integer userId);
+    Collection<ItemRequest> findAllByRequesterId(Integer userId);
 
-    public List<ItemRequest> findAllByRequesterIdNot(Integer requesterId, Pageable pageable);
+    List<ItemRequest> findAllByRequesterIdNot(Integer requesterId, Pageable pageable);
 
 }

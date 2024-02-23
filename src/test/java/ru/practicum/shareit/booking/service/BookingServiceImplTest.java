@@ -469,27 +469,7 @@ class BookingServiceImplTest {
     }
 
     @Test
-    public void testGetBookingForOwnerAndState_isFutureNotValidPage() {
-        LocalDateTime localDateTime = LocalDateTime.now().plusHours(1);
-        LocalDateTime localDateTime1 = LocalDateTime.now().plusHours(10);
-
-        User user = new User(1, "test@email.com", "lasa");
-        User user2 = new User(2, "testTestov@email.com", "nosa");
-        Item item = new Item(10, "table", user2, "big table", true, null, new HashSet<>());
-
-        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, WAITING);
-        //второй запрашивает
-        when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
-        when(itemRepositoryJpa.findByOwnerId(2)).thenReturn(Arrays.asList(new Item()));
-
-        assertThrows(ValidationException.class, () -> bookingService.getBookingForOwnerAndState(2, "FUTURE", -3, 10));
-    }
-
-
-    @Test
     public void testGetBookingForOwnerAndState_isDefaultNotValidPage() {
-        //второй запрашивает
-
         assertThrows(ValidationException.class, () -> bookingService.getBookingForOwnerAndState(2, "nothing", 1, 10));
     }
 
@@ -656,28 +636,6 @@ class BookingServiceImplTest {
         assertNotNull(bookings);
         assertEquals(bookings, bookings);
     }
-
-    @Test
-    public void testGetBookingForOwnerAndState_isThrowPastWithPage() {
-        LocalDateTime localDateTime = LocalDateTime.now().minusHours((10));
-        LocalDateTime localDateTime1 = LocalDateTime.now().minusHours((3));
-
-        User user = new User(1, "test@email.com", "lasa");
-        User user2 = new User(2, "testTestov@email.com", "nosa");
-        Item item = new Item(10, "table", user2, "big table", true, null, new HashSet<>());
-
-        Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, user, WAITING);
-        //второй запрашивает
-        when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
-        when(itemRepositoryJpa.findByOwnerId(2)).thenReturn(Arrays.asList(new Item()));
-
-        assertThrows(ValidationException.class, () -> bookingService.getBookingForOwnerAndState(2, "PAST", -1, 0));
-
-        verify(bookingRepository, never()).findByItemOwnerPaste(anyInt(), any(LocalDateTime.class), any(Pageable.class));
-        verify(bookingRepository, times(0)).findByItemOwnerPaste(anyInt(), any(LocalDateTime.class), any(Pageable.class));
-
-    }
-
 
     @Test
     public void testCheckState() {

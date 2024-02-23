@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.BookingRepositoryJpa;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -41,6 +42,7 @@ class ItemServiceImplTest {
 
     @InjectMocks
     private ItemServiceImpl itemService;
+
 
     @Test
     void addItem_itemSave() {
@@ -315,18 +317,18 @@ class ItemServiceImplTest {
         Item item = new Item(itemId, "item", userOwner, "item for booking", true, null, null);
         Booking booking = new Booking(1, LocalDateTime.now().minusHours(10), LocalDateTime.now().minusHours(9), item, bookerUser, Status.APPROVED);
         Booking bookingTwo = new Booking(2, LocalDateTime.now().plusHours(10), LocalDateTime.now().plusHours(19), item, bookerUser, Status.APPROVED);
-        Collection<Item> list = List.of(item);
+        List<Item> list = List.of(item);
         ItemDtoBooking itemDtoBooking = new ItemDtoBooking(itemId, "item", "item for booking", true, null, BookingMapper.toBookingDtoForItem(booking), BookingMapper.toBookingDtoForItem(bookingTwo), new HashSet<>());
         Collection<ItemDtoBooking> dtoBookingCollection = List.of(itemDtoBooking);
         when(userRepository.findById(userId)).thenReturn(Optional.of(userOwner));
-        when(itemRepository.findByOwnerId(userId)).thenReturn(list);
+        when(itemRepository.findByOwnerId(anyInt(), any(Pageable.class))).thenReturn(list);
 
         when(bookingRepository.findFirstByItemIdAndEndBefore(anyInt(), any(LocalDateTime.class),
                 any(Sort.class))).thenReturn(booking);
         when(bookingRepository.findFirstByItemIdAndStartAfter(anyInt(),
                 any(LocalDateTime.class), any(Sort.class))).thenReturn(bookingTwo);
         when(commentRepository.findAllByItemOwnerId(userOwner.getId())).thenReturn((new HashSet<Comment>()));
-        Collection<ItemDtoBooking> itemActual = itemService.getItemsForUserWithBooking(userId);
+        Collection<ItemDtoBooking> itemActual = itemService.getItemsForUserWithBooking(userId, 0, 10);
 
         assertNotNull(itemActual);
         assertEquals(dtoBookingCollection, itemActual);
@@ -337,7 +339,7 @@ class ItemServiceImplTest {
         int userId = 1;
 
         when(userRepository.findById(userId)).thenThrow(EntityNotFoundException.class);
-        assertThrows(EntityNotFoundException.class, () -> itemService.getItemsForUserWithBooking(userId));
+        assertThrows(EntityNotFoundException.class, () -> itemService.getItemsForUserWithBooking(userId, 0, 10));
 
         verify(bookingRepository, never()).findFirstByItemIdAndEndBefore(anyInt(), any(LocalDateTime.class),
                 any(Sort.class));
@@ -364,8 +366,8 @@ class ItemServiceImplTest {
         Item itemTwo = new Item(2, "itemTwo", new User(), "item for booking", true, null, null);
         List<Item> list = List.of(item, itemTwo);
 
-        when(itemRepository.search(text)).thenReturn(list);
-        Collection<ItemDto> itemList = itemService.searchItem(text);
+        when(itemRepository.search(anyString(), any(Pageable.class))).thenReturn(list);
+        Collection<ItemDto> itemList = itemService.searchItem(text, 0, 10);
 
         assertEquals(ItemMapper.mapToItemDto(list), itemList);
     }
@@ -377,7 +379,7 @@ class ItemServiceImplTest {
         Item itemTwo = new Item(2, "itemTwo", new User(), "item for booking", true, null, null);
         List<Item> list = Collections.EMPTY_LIST;
 
-        Collection<ItemDto> itemList = itemService.searchItem(text);
+        Collection<ItemDto> itemList = itemService.searchItem(text, 0, 10);
 
         assertEquals(ItemMapper.mapToItemDto(list), itemList);
     }
@@ -389,7 +391,7 @@ class ItemServiceImplTest {
         Item itemTwo = new Item(2, "itemTwo", new User(), "item for booking", true, null, null);
         List<Item> list = Collections.EMPTY_LIST;
 
-        Collection<ItemDto> itemList = itemService.searchItem(text);
+        Collection<ItemDto> itemList = itemService.searchItem(text, 0, 10);
 
         assertEquals(ItemMapper.mapToItemDto(list), itemList);
     }
