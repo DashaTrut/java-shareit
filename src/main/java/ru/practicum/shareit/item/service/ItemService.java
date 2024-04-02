@@ -9,14 +9,11 @@ import java.util.List;
 public interface ItemService {
     Item add(ItemDto itemDto, int id);
 
-
     ItemDto update(ItemDto itemDto, int id, int itemId);
-
 
     Item getForId(int itemId);
 
     Collection<Item> getItemsForUser(Integer id);
 
-
-    List<ItemDto> searchItem(String textQuery);
+    List<ItemDto> searchItem(String textQuery, int size, int from);
 }

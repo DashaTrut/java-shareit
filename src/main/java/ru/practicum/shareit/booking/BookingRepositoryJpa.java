@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -7,49 +8,48 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepositoryJpa extends JpaRepository<Booking, Integer> {
-    public Collection<Booking> findByBookerIdOrderByStartDesc(Integer bookerId, Sort sort);
 
-    public Collection<Booking> findByBookerIdAndStatus(Integer bookerId, Status status, Sort sort);
+    List<Booking> findAllByBookerId(Integer bookerId, Pageable pageable);
+
+    List<Booking> findByBookerIdAndStatus(Integer bookerId, Status status, Pageable pageable);
 
     @Query("select bo " +
             "from Booking bo " +
             "where bo.booker.id = ?1 and bo.start < ?2 and bo.end > ?2 ")
-    Collection<Booking> findByBookerIdCurrent(Integer bookerId, LocalDateTime now, Sort sort);
-
+    List<Booking> findByBookerIdCurrent(Integer bookerId, LocalDateTime now, Pageable pageable);
 
     @Query(value = "select bo " +
             "from Booking as bo " +
             "where bo.booker.id = ?1 and  bo.end > ?2 ")
-    Collection<Booking> findByBookerIdFuture(Integer bookerId, LocalDateTime localDateTime, Sort sort);
+    List<Booking> findByBookerIdFuture(Integer bookerId, LocalDateTime localDateTime, Pageable pageable);
 
-    public Collection<Booking> findByBookerIdAndEndBefore(Integer bookerId, LocalDateTime now, Sort sort);
-
+    List<Booking> findByBookerIdAndEndBefore(Integer bookerId, LocalDateTime now, Pageable pageable);
 
     @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 ")
-    Collection<Booking> findByItemOwnerOrderByStartDesc(Integer idUser, Sort sort);
+    List<Booking> findByItemOwnerOrderByStartDesc(Integer idUser, Pageable pageable);
 
-    public Collection<Booking> findAllByItemOwnerIdAndStatus(Integer bookerId, Status status, Sort sort);
+    List<Booking> findAllByItemOwnerIdAndStatus(Integer bookerId, Status status, Pageable pageable);
 
     @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.end > ?2")
-    Collection<Booking> findByItemOwnerFuture(Integer bookerId, LocalDateTime localDateTime, Sort sort);
+    List<Booking> findByItemOwnerFuture(Integer bookerId, LocalDateTime localDateTime, Pageable pageable);
 
     @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.end < ?2")
-    Collection<Booking> findByItemOwnerPaste(Integer bookerId, LocalDateTime localDateTime, Sort sort);
+    List<Booking> findByItemOwnerPaste(Integer bookerId, LocalDateTime localDateTime, Pageable pageable);
 
     @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.start < ?2 AND b.end > ?2")
-    Collection<Booking> findByItemOwnerCurrent(Integer bookerId, LocalDateTime localDateTime, Sort sort);
+    List<Booking> findByItemOwnerCurrent(Integer bookerId, LocalDateTime localDateTime, Pageable pageable);
 
     Booking findFirstByItemIdAndEndBefore(Integer itemId, LocalDateTime localDateTime, Sort sort);
 
-    public Booking findFirstByItemIdAndStartBefore(Integer itemId, LocalDateTime localDateTime, Sort sort);
+    Booking findFirstByItemIdAndStartBefore(Integer itemId, LocalDateTime localDateTime, Sort sort);
 
     Booking findFirstByItemIdAndStartAfter(Integer itemId, LocalDateTime localDateTime, Sort sort);
 
-    public Booking findFirstByItemIdAndStartAfterAndStatus(Integer itemId, LocalDateTime localDateTime, Status status, Sort sort);
+    Booking findFirstByItemIdAndStartAfterAndStatus(Integer itemId, LocalDateTime localDateTime, Status status, Sort sort);
 
-    public Optional<Booking> findFirstByBookerIdAndItemIdAndEndBefore(Integer bookerId, Integer itemId, LocalDateTime now);
+    Optional<Booking> findFirstByBookerIdAndItemIdAndEndBefore(Integer bookerId, Integer itemId, LocalDateTime now);
 }
