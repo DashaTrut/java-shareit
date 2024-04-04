@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  user-service:
+  gateway:
     build: gateway
     image: gateway-image
     container_name: gateway-container
@@ -23,7 +23,7 @@ services:
       - server-db
     environment:
       - SERVER_PORT=8090
-      - SHAREIT_GATEWAY_URL=http://user-service:8080
+      - SHAREIT_GATEWAY_URL=http://gateway:8080
       - SPRING_DATASOURCE_URL=jdbc:postgresql://server-db:5432/shareit
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=iamroot
