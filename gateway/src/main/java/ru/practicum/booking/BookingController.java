@@ -24,13 +24,12 @@ public class BookingController {
 
     @GetMapping
     public ResponseEntity<Object> getBookings(@RequestHeader("X-Sharer-User-Id") long userId,
-                                              @RequestParam(name = "state", defaultValue = "all") String stateParam,
-                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+                                              @RequestParam(name = "state", defaultValue = "ALL") String state,
+                                              @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero Integer from,
                                               @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        State state = State.getEnumValue(stateParam)
-                .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
-        log.info("Get booking with state {}, userId={}, from={}, size={}", stateParam, userId, from, size);
-        return bookingClient.getBookings(userId, state, from, size);
+        State state1 = State.getEnumValue(state);
+        log.info("Get booking with state {}, userId={}, from={}, size={}", state, userId, from, size);
+        return bookingClient.getBookings(userId, state1, from, size);
     }
 
     @PostMapping
@@ -57,12 +56,11 @@ public class BookingController {
 
     @GetMapping("/owner")
     public ResponseEntity<Object> getBookingForOwnerAndState(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                                             @RequestParam(defaultValue = "ALL", required = false) String stateParam,
+                                                             @RequestParam(defaultValue = "ALL", required = false) String state,
                                                              @RequestParam(defaultValue = "0", required = false) @PositiveOrZero Integer from,
                                                              @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        State state = State.getEnumValue(stateParam)
-                .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
-        log.info("Get booking with state and owner {}, userId={}, from={}, size={}", stateParam, userId, from, size);
-        return bookingClient.getBookingForOwner(userId, state, from, size);
+        State state1 = State.getEnumValue(state);
+        log.info("Get booking with state and owner {}, userId={}, from={}, size={}", state, userId, from, size);
+        return bookingClient.getBookingForOwner(userId, state1, from, size);
     }
 }

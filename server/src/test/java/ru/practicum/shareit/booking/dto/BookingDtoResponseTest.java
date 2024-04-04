@@ -7,12 +7,12 @@ import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
 import ru.practicum.shareit.booking.model.Status;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.dto.ItemDtoResponseForBooking;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dto.UserDtoResponse;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,14 +35,14 @@ class BookingDtoResponseTest {
                 .name("lasa")
                 .build();
 
+        UserDtoResponse user1 = UserDtoResponse.builder()
+                .id(1)
+                .name("lasa")
+                .build();
 
-        Item itemDto = Item.builder()
+        ItemDtoResponseForBooking itemDto = ItemDtoResponseForBooking.builder()
                 .id(1)
                 .name("item")
-                .owner(user)
-                .available(true)
-                .description("test item")
-                .tags(Collections.EMPTY_SET)
                 .build();
 
         BookingDtoResponse bookingOutDto = BookingDtoResponse.builder()
@@ -50,7 +50,7 @@ class BookingDtoResponseTest {
                 .start(start)
                 .end(end)
                 .status(Status.APPROVED)
-                .booker(user)
+                .booker(user1)
                 .item(itemDto)
                 .build();
 
@@ -62,10 +62,8 @@ class BookingDtoResponseTest {
         assertThat(result).extractingJsonPathStringValue("$.status").isEqualTo("APPROVED");
         assertThat(result).extractingJsonPathNumberValue("$.booker.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.booker.name").isEqualTo("lasa");
-        assertThat(result).extractingJsonPathStringValue("$.booker.email").isEqualTo("test@email.com");
         assertThat(result).extractingJsonPathNumberValue("$.item.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.item.name").isEqualTo("item");
-        assertThat(result).extractingJsonPathBooleanValue("$.item.available").isEqualTo(true);
     }
 
 }

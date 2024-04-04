@@ -227,19 +227,19 @@ class BookingRepositoryJpaTest {
         assertEquals(actualBooking, List.of(bookingFuture));
     }
 
-//    @Test
-//    void findByBookerIdAndStatus() {
-//        Collection<Booking> actualBooking = bookingRepository.findByBookerIdAndStatus(user2.getId(), APPROVED.toString(), pageable);
-//        assertTrue(!actualBooking.isEmpty());
-//        assertEquals(actualBooking.size(), 1);
-//        assertEquals(actualBooking, List.of(bookingCurrent));
-//    }
-//
-//    @Test
-//    void findByBookerIdAndStatusWAITING() {
-//        List<Booking> actualBooking = bookingRepository.findByBookerIdAndStatus(user2.getId(), WAITING.toString(), pageable);
-//        assertTrue(!actualBooking.isEmpty());
-//        assertEquals(actualBooking.size(), 1);
-        //assertEquals(actualBooking.get, List.of(bookingFuture));
-   // }
+    @Test
+    void findByBookerIdAndStatus() {
+        Collection<Booking> actualBooking = bookingRepository.findByBookerIdAndStatus(user2.getId(), APPROVED, pageable);
+        assertTrue(!actualBooking.isEmpty());
+        assertEquals(actualBooking.size(), 1);
+        assertEquals(actualBooking, List.of(bookingCurrent));
+    }
+
+    @Test
+    void findByBookerIdAndStatusWAITING() {
+        List<Booking> actualBooking = bookingRepository.findByBookerIdAndStatus(user2.getId(), WAITING, pageable);
+        assertTrue(!actualBooking.isEmpty());
+        assertEquals(actualBooking.size(), 1);
+        assertEquals(actualBooking, List.of(bookingFuture));
+    }
 }

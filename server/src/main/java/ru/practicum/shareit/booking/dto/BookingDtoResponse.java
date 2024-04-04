@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.booking.model.Status;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.item.dto.ItemDtoResponseForBooking;
+import ru.practicum.shareit.user.dto.UserDtoResponse;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
@@ -21,9 +21,9 @@ public class BookingDtoResponse {
     @NotNull
     private LocalDateTime end;
     @NotNull
-    private Item item;
+    private ItemDtoResponseForBooking item;
     @NotNull
-    private User booker;
+    private UserDtoResponse booker;
     @NotNull
     private Status status;
 

@@ -3,8 +3,10 @@ package ru.practicum.shareit.booking.dto;
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.item.dto.ItemDtoResponseForBooking;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dto.UserDtoResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,11 +55,10 @@ public class BookingMapper {
                 .id(booking.getId())
                 .start(booking.getStart())
                 .end(booking.getEnd())
-                .item(booking.getItem())
-                .booker(booking.getBooker())
+                .item(new ItemDtoResponseForBooking(booking.getItem().getId(), booking.getItem().getName()))
+                .booker(new UserDtoResponse(booking.getBooker().getId(), booking.getBooker().getName()))
                 .status(booking.getStatus())
                 .build();
-
     }
 }
 

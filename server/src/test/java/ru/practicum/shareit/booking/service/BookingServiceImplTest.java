@@ -361,7 +361,7 @@ class BookingServiceImplTest {
         Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item10, WAITING, user2);
         //второй запрашивает
         when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
-        when(bookingRepository.findByBookerIdAndStatus(anyInt(), any(String.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
+        when(bookingRepository.findByBookerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
 
         Collection<Booking> bookings = bookingService.getBookingForState(2, "WAITING", 0, 1);
         assertNotNull(bookings);
@@ -388,7 +388,7 @@ class BookingServiceImplTest {
         Booking bookingNew = new Booking(1, localDateTime, localDateTime1, item, WAITING, user);
         //второй запрашивает
         when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
-        when(bookingRepository.findByBookerIdAndStatus(anyInt(), any(String.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
+        when(bookingRepository.findByBookerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
 
         Collection<Booking> bookings = bookingService.getBookingForState(2, "WAITING", 1, 1);
         assertNotNull(bookings);
@@ -443,7 +443,7 @@ class BookingServiceImplTest {
         List<Booking> returnList = Arrays.asList(bookingNew);
         when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
         when(itemRepositoryJpa.findByOwnerId(2)).thenReturn(Arrays.asList(new Item()));
-        when(bookingRepository.findAllByItemOwnerIdAndStatus(anyInt(), any(String.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
+        when(bookingRepository.findAllByItemOwnerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
 
         Collection<Booking> bookings = bookingService.getBookingForOwnerAndState(2, "REJECTED", 1, 1);
         assertNotNull(bookings);
@@ -564,7 +564,7 @@ class BookingServiceImplTest {
     public void testGetBookingForStateWithPage_isWaitingWithPage() {
         Booking bookingNew = new Booking(1, localDateTime.minusHours(1), localDateTime1, item10, WAITING, user);
         //второй запрашивает
-        when(bookingRepository.findByBookerIdAndStatus(anyInt(), any(String.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
+        when(bookingRepository.findByBookerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
 
         Collection<Booking> bookings = bookingService.getBookingForStateWithPage(2, State.WAITING, 0, 1);
         assertNotNull(bookings);
@@ -575,7 +575,7 @@ class BookingServiceImplTest {
     public void testGetBookingForStateWithPage_isRejectedWithPage() {
         Booking bookingNew = new Booking(1, localDateTime.minusHours(1), localDateTime1, item10, WAITING, user);
         //второй запрашивает
-        when(bookingRepository.findByBookerIdAndStatus(anyInt(), any(String.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
+        when(bookingRepository.findByBookerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class))).thenReturn(List.of(bookingNew));
 
         Collection<Booking> bookings = bookingService.getBookingForStateWithPage(2, State.REJECTED, 0, 1);
         assertNotNull(bookings);

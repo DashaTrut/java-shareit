@@ -17,6 +17,8 @@ public interface BookingRepositoryJpa extends JpaRepository<Booking, Integer> {
 
     List<Booking> findByBookerIdAndStatus(Integer bookerId, String status, Pageable pageable);
 
+    List<Booking> findByBookerIdAndStatus(Integer bookerId, Status status, Pageable pageable);
+
     @Query("select bo " +
             "from Booking bo " +
             "where bo.booker.id = ?1 and bo.start < ?2 and bo.end > ?2 ")
@@ -33,7 +35,8 @@ public interface BookingRepositoryJpa extends JpaRepository<Booking, Integer> {
     List<Booking> findByItemOwnerOrderByStartDesc(Integer idUser, Pageable pageable);
 
     List<Booking> findAllByItemOwnerIdAndStatus(Integer bookerId, String status, Pageable pageable);
-    // List<Booking> findAllByItemOwnerIdAndStatus(Integer bookerId, Status status, Pageable pageable);
+
+    List<Booking> findAllByItemOwnerIdAndStatus(Integer bookerId, Status status, Pageable pageable);
 
 
     @Query("SELECT b FROM Booking b JOIN b.item i JOIN b.booker u WHERE i.owner.id = ?1 AND b.end > ?2")

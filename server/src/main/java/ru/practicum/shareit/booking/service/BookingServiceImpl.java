@@ -75,7 +75,8 @@ public class BookingServiceImpl {
                 new EntityNotFoundException("Пользователя не существует"));
         if (item.getOwner().getId() == idUser) {
             booking.setStatus(status);
-            return bookingRepositoryJpa.save(booking);
+            Booking bag = bookingRepositoryJpa.save(booking);
+            return bag;
         } else {
             throw new EntityNotFoundException("Только владелец может подтвердить бронирование вещи");
         }
@@ -108,9 +109,10 @@ public class BookingServiceImpl {
                 List<Booking> list = bookingRepositoryJpa.findAllByBookerId(brookerId, pageable);
                 return list;
             case WAITING:
-                return bookingRepositoryJpa.findByBookerIdAndStatus(brookerId, WAITING.toString(), pageable);
+                Collection<Booking> bag = bookingRepositoryJpa.findByBookerIdAndStatus(brookerId, WAITING, pageable);
+                return bag;
             case REJECTED:
-                return bookingRepositoryJpa.findByBookerIdAndStatus(brookerId, REJECTED.toString(), pageable);
+                return bookingRepositoryJpa.findByBookerIdAndStatus(brookerId, REJECTED, pageable);
             case CURRENT:
                 return bookingRepositoryJpa.findByBookerIdCurrent(brookerId, LocalDateTime.now(), pageable);
             case FUTURE:
@@ -140,9 +142,9 @@ public class BookingServiceImpl {
             case ALL:
                 return bookingRepositoryJpa.findByItemOwnerOrderByStartDesc(idUser, pageable);
             case WAITING:
-                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, WAITING.toString(), pageable);
+                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, WAITING, pageable);
             case REJECTED:
-                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, REJECTED.toString(), pageable);
+                return bookingRepositoryJpa.findAllByItemOwnerIdAndStatus(idUser, REJECTED, pageable);
             case CURRENT:
                 return bookingRepositoryJpa.findByItemOwnerCurrent(idUser, LocalDateTime.now(), pageable);
             case FUTURE:

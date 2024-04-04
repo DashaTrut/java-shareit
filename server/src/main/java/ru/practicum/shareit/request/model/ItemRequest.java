@@ -29,5 +29,4 @@ public class ItemRequest { //класс, отвечающий за запрос 
     @JoinColumn(name = "requester_id", nullable = false)
     private User requester;
     private LocalDateTime created;
-    //только тут сделать валидацию
 }

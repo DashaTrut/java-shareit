@@ -1,6 +1,7 @@
 package ru.practicum.booking.dto;
 
-import java.util.Optional;
+
+import ru.practicum.exception.ValidationException;
 
 public enum State {
     ALL, // (англ. «все»).
@@ -10,12 +11,11 @@ public enum State {
     WAITING, // (англ. «ожидающие подтверждения»),
     REJECTED; // (англ. «отклонённые»)
 
-    public static Optional<State> getEnumValue(String stringState) {
-        for (State state : values()) {
-            if (state.name().equalsIgnoreCase(stringState)) {
-                return Optional.of(state);
-            }
+    public static State getEnumValue(String stringState) {
+        try {
+            return State.valueOf(stringState);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return Optional.empty();
     }
 }

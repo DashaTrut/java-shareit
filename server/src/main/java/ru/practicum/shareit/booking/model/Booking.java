@@ -36,7 +36,6 @@ public class Booking {
     private User booker;
 
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
