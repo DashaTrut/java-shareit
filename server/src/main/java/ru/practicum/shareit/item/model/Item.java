@@ -7,8 +7,6 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -26,20 +24,15 @@ public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @NotBlank
     private String name;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_owner", nullable = false)
     private User owner;
-    @NotBlank
     private String description;
-    @NotNull
     private Boolean available;
-
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "request")
     private ItemRequest request;
-
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     @JsonBackReference
     private Set<Comment> tags = new HashSet<>();

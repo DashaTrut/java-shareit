@@ -7,9 +7,6 @@ import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,7 +20,7 @@ public class ItemController {
 
 
     @PostMapping //добавление вещи;
-    public ItemDto addItem(@Valid @RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Integer id) {
+    public ItemDto addItem(@RequestBody ItemDto itemDto, @RequestHeader("X-Sharer-User-Id") Integer id) {
         Item item = itemServiceImpl.add(itemDto, id);
         log.info("Add Item{}", item);
         return ItemMapper.toItemDto(item);
@@ -44,22 +41,22 @@ public class ItemController {
 
     @GetMapping
     public Collection<ItemDtoBooking> getItemsForUser(@RequestHeader("X-Sharer-User-Id") int id,
-                                                      @RequestParam(defaultValue = "0", required = false) @PositiveOrZero Integer from,
-                                                      @RequestParam(defaultValue = "10", required = false) @Positive Integer size) {
+                                                      @RequestParam(defaultValue = "0", required = false) Integer from,
+                                                      @RequestParam(defaultValue = "10", required = false) Integer size) {
         log.info("Get items user id{}", id);
         return itemServiceImpl.getItemsForUserWithBooking(id, from, size);
     }
 
     @GetMapping("/search")
     public List<ItemDto> searchItems(@RequestParam String text,
-                                     @RequestParam(defaultValue = "0", required = false) @PositiveOrZero Integer from,
-                                     @RequestParam(defaultValue = "10", required = false) @Positive Integer size) {
+                                     @RequestParam(defaultValue = "0", required = false) Integer from,
+                                     @RequestParam(defaultValue = "10", required = false) Integer size) {
         log.info("search {}, text");
         return itemServiceImpl.searchItem(text, from, size);
     }
 
     @PostMapping("{itemId}/comment")
-    public CommentForItem addComment(@RequestBody @Valid CommentDto text, @PathVariable int itemId, @RequestHeader("X-Sharer-User-Id") Integer id) {
+    public CommentForItem addComment(@RequestBody CommentDto text, @PathVariable int itemId, @RequestHeader("X-Sharer-User-Id") Integer id) {
         return itemServiceImpl.addComment(text, itemId, id);
     }
 }

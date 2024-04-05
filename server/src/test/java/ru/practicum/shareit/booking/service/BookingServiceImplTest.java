@@ -417,8 +417,8 @@ class BookingServiceImplTest {
         when(userRepositoryJpa.findById(2)).thenReturn(Optional.of(user2));
 
         assertThrows(IllegalArgumentException.class, () -> bookingService.getBookingForState(2, "WAITING", -2, 1));
-        verify(bookingRepository, never()).findByBookerIdAndStatus(anyInt(), any(String.class), any(Pageable.class));
-        verify(bookingRepository, times(0)).findByBookerIdAndStatus(anyInt(), any(String.class), any(Pageable.class));
+        verify(bookingRepository, never()).findByBookerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class));
+        verify(bookingRepository, times(0)).findByBookerIdAndStatus(anyInt(), any(Status.class), any(Pageable.class));
     }
 
 

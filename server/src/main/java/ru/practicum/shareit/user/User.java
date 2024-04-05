@@ -3,7 +3,6 @@ package ru.practicum.shareit.user;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
 
 
 @Getter
@@ -15,14 +14,10 @@ import javax.validation.constraints.*;
 @NoArgsConstructor
 @Table(name = "users", schema = "public")
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Email
-    @NotBlank
     private String email;
-    @NotBlank
     private String name;
 
     @Override
